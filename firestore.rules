@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /routes/{routeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /agencies/{agencyId} {
+      allow read: if resource.data.is_verified == true || isAdmin() || request.auth.uid == agencyId;
+      allow create: if request.auth.uid == agencyId;
+      allow update: if isAdmin() || (
+        request.auth.uid == agencyId &&
+        request.resource.data.uid == resource.data.uid &&
+        request.resource.data.is_verified == resource.data.is_verified &&
+        request.resource.data.trial_expiry == resource.data.trial_expiry &&
+        request.resource.data.trial_start == resource.data.trial_start &&
+        request.resource.data.status == resource.data.status
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /routePurchases/{purchaseId} {
+      allow read: if isAdmin() || request.auth.uid == resource.data.agency_uid;
+      allow create: if request.auth.uid == request.resource.data.agency_uid
+        && get(/databases/$(database)/documents/agencies/$(request.auth.uid)).data.is_verified == true;
+      allow update, delete: if isAdmin();
+    }
+
+    match /otpRequests/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

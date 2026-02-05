@@ -1,0 +1,25 @@
+[
+    {
+        "id": "siliguri-darjeeling",
+        "title": "Siliguri to Darjeeling",
+        "subtitle": "Himalayan Mountain Adventure",
+        "slug": "siliguri-kurseong-darjeeling",
+        "distanceKm": 78,
+        "durationHours": 3,
+        "sponsorCount": 2,
+        "assetFolder": "/routes/siliguri-Kurseong-darjeeling/meta/mobile/frames",
+        "totalFrames": 1828,
+        "desktopAssetFolder": "/routes/siliguri-Kurseong-darjeeling/desktop/frames",
+        "desktopTotalFrames": 1920
+    },
+    {
+        "id": "kolkata-sundarbans",
+        "title": "Kolkata to Sundarbans",
+        "subtitle": "Mangrove Forest Journey",
+        "slug": "kolkata-sundarbans",
+        "distanceKm": 110,
+        "durationHours": 4,
+        "sponsorCount": 1,
+        "assetFolder": "/routes/kolkata-sundarbans"
+    }
+]

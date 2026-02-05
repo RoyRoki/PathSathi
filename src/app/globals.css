@@ -1,0 +1,352 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Refined Natural Palette - Premium Travel */
+    --background: 0 0% 100%;
+    --foreground: 150 10% 12%;
+
+    /* Primary - Sophisticated Forest */
+    --primary: 160 45% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Mountain Slate */
+    --secondary: 200 30% 40%;
+    --secondary-foreground: 0 0% 100%;
+
+    /* Accent - Warm Gold */
+    --accent: 38 92% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Muted */
+    --muted: 40 15% 96%;
+    --muted-foreground: 150 5% 45%;
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 150 10% 12%;
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 10% 12%;
+
+    /* Border */
+    --border: 40 12% 92%;
+    --input: 40 12% 92%;
+    --ring: 160 45% 28%;
+
+    /* Radius */
+    --radius: 1rem;
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Luxury accent colors for route pages */
+    --obsidian-950: 15 20% 8%;
+    /* Deep background accents */
+    --obsidian-900: 15 20% 12%;
+    /* Secondary dark */
+    --bronze-600: 38 35% 45%;
+    /* Warm metallic accent */
+    --bronze-500: 38 40% 55%;
+    /* Bronze glow/hover */
+    --teal-accent: 160 45% 35%;
+    /* Accent teal (aligns with primary) */
+  }
+
+  .dark {
+    --background: 150 15% 8%;
+    --foreground: 0 0% 98%;
+
+    --primary: 160 40% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --card: 150 15% 10%;
+    --card-foreground: 0 0% 98%;
+
+    --border: 150 10% 18%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1, "kern" 1;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Typography refinements */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply tracking-tight;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    @apply leading-relaxed;
+  }
+}
+
+@layer components {
+
+  /* Premium glassmorphism */
+  .glass-premium {
+    @apply bg-white/10 backdrop-blur-2xl border border-white/20 shadow-2xl;
+  }
+
+  .glass-card {
+    @apply bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-2xl;
+  }
+}
+
+@layer utilities {
+
+  /* Premium gradients */
+  .bg-premium-gradient {
+    background: linear-gradient(135deg,
+        hsl(var(--primary)) 0%,
+        hsl(var(--secondary)) 50%,
+        hsl(var(--accent)) 100%);
+  }
+
+  .bg-mountain-gradient {
+    background: linear-gradient(180deg,
+        hsl(160 45% 28%) 0%,
+        hsl(160 40% 35%) 50%,
+        hsl(200 30% 40%) 100%);
+  }
+
+  .bg-sunrise-gradient {
+    background: linear-gradient(90deg,
+        hsl(35 95% 55%) 0%,
+        hsl(45 95% 60%) 100%);
+  }
+
+  /* Text gradients */
+  .text-premium-gradient {
+    @apply bg-gradient-to-br from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Shadow utilities */
+  .shadow-premium {
+    box-shadow:
+      0 10px 30px -5px rgba(0, 0, 0, 0.1),
+      0 20px 60px -10px rgba(0, 0, 0, 0.15),
+      0 40px 80px -20px rgba(0, 0, 0, 0.1);
+  }
+
+  .shadow-3xl {
+    box-shadow:
+      0 20px 50px -12px rgba(0, 0, 0, 0.25),
+      0 40px 100px -20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Animations */
+  @keyframes fade-in-up-premium {
+    from {
+      opacity: 0;
+      transform: translateY(3rem) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes slide-in-elegant {
+    from {
+      opacity: 0;
+      transform: translateX(-3rem);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes glow {
+
+    0%,
+    100% {
+      opacity: 0.5;
+    }
+
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in-up-premium {
+    animation: fade-in-up-premium 0.8s ease-out forwards;
+  }
+
+  .animate-slide-in-elegant {
+    animation: slide-in-elegant 0.7s ease-out forwards;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-glow {
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  /* Premium noise texture */
+  .noise-bg::before {
+    content: "";
+    position: fixed;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background-image: url("https://grains.glitch.me/noise");
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 9999;
+    animation: noise 8s steps(10) infinite;
+  }
+
+  @keyframes noise {
+
+    0%,
+    100% {
+      transform: translate(0, 0)
+    }
+
+    10% {
+      transform: translate(-5%, -10%)
+    }
+
+    20% {
+      transform: translate(-15%, 5%)
+    }
+
+    30% {
+      transform: translate(7%, -25%)
+    }
+
+    40% {
+      transform: translate(-5%, 25%)
+    }
+
+    50% {
+      transform: translate(-15%, 10%)
+    }
+
+    60% {
+      transform: translate(15%, 0%)
+    }
+
+    70% {
+      transform: translate(0, 15%)
+    }
+
+    80% {
+      transform: translate(3%, 35%)
+    }
+
+    90% {
+      transform: translate(-10%, 10%)
+    }
+  }
+
+  /* Text balance */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Modern scroll progress bar */
+  .scroll-progress {
+    @apply fixed top-0 left-0 right-0 h-1 bg-primary z-[60] origin-left scale-x-0;
+  }
+
+  /* Scroll indicator animation */
+  @keyframes scroll-indicator {
+
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+
+    50% {
+      transform: translateY(50%);
+      opacity: 1;
+    }
+  }
+
+  .animate-scroll-indicator {
+    animation: scroll-indicator 2s ease-in-out infinite;
+  }
+
+  /* Frosted glass button */
+  .btn-frosted-glass {
+    @apply relative px-8 py-4 bg-white/10 backdrop-blur-xl border border-white/20 text-white font-medium text-sm tracking-[0.2em] uppercase rounded-full transition-all duration-700 hover:bg-white/20 hover:border-white/40 hover:shadow-2xl;
+  }
+
+  .btn-bronze-glow:hover {
+    box-shadow:
+      0 0 20px rgba(255, 183, 77, 0.4),
+      0 0 40px rgba(255, 183, 77, 0.2);
+  }
+}
+
+/* Custom cursor CSS removed */
+
+/* Custom scrollbar - Premium */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/40 rounded-full;
+  transition: background 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/60;
+}
+
+/* Selection color */
+::selection {
+  @apply bg-accent/30 text-foreground;
+}
