@@ -10,12 +10,12 @@ interface ImageItem {
 }
 
 const images: ImageItem[] = [
-    { src: "/images/gallery_tea_estate_1770294480982.png", alt: "Tea Estate" },
-    { src: "/images/gallery_monastery_interior_1770294497797.png", alt: "Monastery Interior" },
+    { src: "/images/premium-tea.png", alt: "Tea Estate" },
+    { src: "/images/luxury-monastery.png", alt: "Monastery Interior" },
     { src: "/images/darjeeling_hero_bg_1770289408859.png", alt: "Himalayan Sunrise" },
     { src: "/images/mountain_road_journey_1770289426463.png", alt: "Winding Mountain Road" },
     { src: "/images/sikkim_monastery_1770289444287.png", alt: "Mountain Monastery" },
-    { src: "/images/misty_mountains_subtle_1770290902389.png", alt: "Misty Peaks" },
+    { src: "/images/dashboard-bg.png", alt: "Misty Peaks" },
 ];
 
 export function ScrollingGallery() {
