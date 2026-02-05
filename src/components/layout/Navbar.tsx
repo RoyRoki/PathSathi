@@ -33,9 +33,7 @@ export function Navbar() {
 
     const navLinks = [
         { href: "/", label: "Home" },
-        { href: "/#routes", label: "Journeys" },
-        { href: "/agencies", label: "Partners" },
-        { href: "/about", label: "About" }
+        { href: "/#routes", label: "Journeys" }
     ];
 
     const pathname = usePathname();
