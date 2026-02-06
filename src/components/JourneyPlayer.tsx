@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { getAssetPath } from "@/lib/utils";
 
 type POI = {
   startTime: number;
@@ -73,7 +74,7 @@ export function JourneyPlayer({
     return () => window.removeEventListener("scroll", handleScroll);
   }, [totalFrames, pointsOfInterest]);
 
-  const framePath = `/routes/${routeSlug}/${devicePath}/frames/frame_${String(currentFrame).padStart(4, "0")}.webp`;
+  const framePath = getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(currentFrame).padStart(4, "0")}.webp`);
 
   const scrollProgress = currentFrame / totalFrames;
 

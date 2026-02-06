@@ -1,4 +1,5 @@
 import { RouteInfo } from "./types";
+import { getAssetPath } from "./utils";
 
 export const routes: RouteInfo[] = [
   {
@@ -43,7 +44,7 @@ export const routes: RouteInfo[] = [
     subtitle: "Himalayan Mountain Adventure",
     distanceKm: 78,
     durationHours: 3,
-    heroImage: "/routes/siliguri-Kurseong-darjeeling/meta/hero.webp",
+    heroImage: getAssetPath("/routes/siliguri-Kurseong-darjeeling/meta/hero.webp"),
     assetFolder: "routes/siliguri-Kurseong-darjeeling",
     totalFrames: 247,
     agencies: []

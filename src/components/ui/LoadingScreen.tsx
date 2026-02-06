@@ -2,6 +2,7 @@
 
 import { DotLottiePlayer } from '@dotlottie/react-player'
 import '@dotlottie/react-player/dist/index.css'
+import { getAssetPath } from '@/lib/utils'
 
 export function LoadingScreen() {
     return (
@@ -9,7 +10,7 @@ export function LoadingScreen() {
             <div className="flex flex-col items-center gap-4">
                 <div className="h-48 w-48 md:h-64 md:w-64">
                     <DotLottiePlayer
-                        src="/loading.lottie"
+                        src={getAssetPath("/loading.lottie")}
                         autoplay
                         loop
                         className="h-full w-full"

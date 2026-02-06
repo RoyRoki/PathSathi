@@ -15,6 +15,7 @@ import { JourneyPlayer } from "@/components/JourneyPlayer";
 import { AgencySelector } from "@/components/AgencySelector";
 import { AgencySheet } from "@/components/AgencySheet";
 import { routes as mockRoutes } from "@/lib/mock-data";
+import { getAssetPath } from "@/lib/utils";
 import type { Agency } from "@/lib/types";
 import { gsap, useGSAP } from "@/lib/gsap";
 // import { initSmoothScroll } from "@/lib/lenis"; // Temporarily disabled
@@ -119,7 +120,7 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
     // Load route configuration
     const loadConfig = async () => {
       try {
-        const response = await fetch(`/routes/${slug}/meta/config.json`);
+        const response = await fetch(getAssetPath(`/routes/${slug}/meta/config.json`));
         if (response.ok) {
           const config = await response.json();
           setRouteConfig(config);
