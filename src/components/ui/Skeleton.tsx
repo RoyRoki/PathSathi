@@ -19,7 +19,7 @@ const Skeleton = forwardRef<HTMLDivElement, SkeletonProps>(
         },
         ref
     ) => {
-        const baseClasses = "skeleton bg-ink/10 animate-pulse";
+        const baseClasses = "skeleton bg-foreground/10 animate-pulse";
 
         const variantClasses = {
             text: "h-4 rounded",
@@ -75,7 +75,7 @@ const CardSkeleton = () => (
 );
 
 const TableRowSkeleton = () => (
-    <div className="border-b border-ink/10 py-4 flex items-center gap-4">
+    <div className="border-b border-border py-4 flex items-center gap-4">
         <Skeleton variant="circular" width={40} height={40} />
         <div className="flex-1 space-y-2">
             <Skeleton variant="text" width="60%" />

@@ -17,7 +17,7 @@ export default function Error({
     }, [error]);
 
     return (
-        <div className="min-h-screen gradient-bg-hero flex items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-muted flex items-center justify-center p-6 text-center">
             <div className="max-w-md w-full">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -41,7 +41,7 @@ export default function Error({
                     </div>
 
                     <h1 className="text-2xl font-bold mb-2">Something went wrong!</h1>
-                    <p className="text-ink/60 mb-8">
+                    <p className="text-muted-foreground mb-8">
                         We encountered a slight stumble. Don't worry, even the best travelers face obstacles.
                     </p>
 

@@ -80,14 +80,14 @@ export function JourneyPlayer({
   return (
     <div ref={containerRef} className="relative h-[500vh]">
       {/* Progress Bar */}
-      <div className="sticky top-0 left-0 w-full h-1 bg-black/20 backdrop-blur-md border-b border-white/10 z-50">
+      <div className="sticky top-0 left-0 w-full h-0.5 bg-black/20 backdrop-blur-md z-50">
         <div
-          className="h-full bg-white shadow-[0_0_15px_rgba(255,255,255,0.6)] transition-all duration-100"
+          className="h-full bg-[hsl(var(--accent))] shadow-[0_0_8px_hsl(var(--accent)/0.4)] transition-all duration-100"
           style={{ width: `${scrollProgress * 100}%` }}
         />
       </div>
 
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black" style={{ marginTop: '-4px' }}>
+      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black" style={{ marginTop: '-2px' }}>
         {/* Frame Display */}
         <div className="relative w-full h-full">
           <Image
@@ -99,6 +99,8 @@ export function JourneyPlayer({
             quality={100}
             unoptimized
           />
+          {/* Vignette overlay */}
+          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.4)]" />
         </div>
 
         {/* POI Overlay - Alternating Positions */}
@@ -107,11 +109,13 @@ export function JourneyPlayer({
             className={`absolute md:top-1/2 md:-translate-y-1/2 bottom-20 md:bottom-auto z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ${activePOIIndex % 2 === 0 ? 'left-4 md:left-8' : 'right-4 md:right-8'
               }`}
           >
-            <div className="w-64 md:w-72 bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-5 border-2 border-white/30 shadow-2xl">
-              <h3 className="text-base md:text-lg font-semibold text-white mb-1.5 md:mb-2 tracking-tight">
+            <div className="w-72 md:w-80 bg-black/40 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/15 shadow-xl overflow-hidden">
+              {/* Copper accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[hsl(var(--accent))]" />
+              <h3 className="font-display text-base md:text-lg font-semibold text-white mb-1.5 md:mb-2 tracking-tight">
                 {activePOI.header}
               </h3>
-              <p className="text-xs md:text-sm text-white/80 leading-snug">
+              <p className="text-xs md:text-sm lg:text-base text-white/80 leading-snug">
                 {activePOI.shortDescription}
               </p>
             </div>

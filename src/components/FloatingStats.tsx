@@ -85,8 +85,8 @@ export function FloatingStats({
             value: totalPOIs,
             unit: "POIs",
             label: "Points of Interest",
-            gradient: "from-green-500/20 to-green-500/5",
-            iconColor: "text-green-500",
+            gradient: "from-accent/20 to-accent/5",
+            iconColor: "text-accent",
         },
     ];
 

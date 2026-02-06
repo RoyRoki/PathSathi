@@ -40,7 +40,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50"
+                    className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50"
                     onClick={onClose}
                 />
 
@@ -63,7 +63,7 @@ const Modal = forwardRef<HTMLDivElement, ModalProps>(
                                 {showCloseButton && (
                                     <button
                                         onClick={onClose}
-                                        className="p-2 hover:bg-ink/5 rounded-lg transition-colors ml-auto"
+                                        className="p-2 hover:bg-foreground/5 rounded-lg transition-colors ml-auto"
                                         aria-label="Close modal"
                                     >
                                         <svg

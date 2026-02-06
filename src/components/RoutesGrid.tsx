@@ -3,45 +3,72 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { GridSkeleton } from "@/components/ui";
+import { getFirestoreDb } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-// Mock route data (replace with actual Firestore data)
-const mockRoutes = [
-  {
-    id: "siliguri-darjeeling",
-    title: "Siliguri to Darjeeling",
-    subtitle: "Himalayan Mountain Adventure",
-    slug: "siliguri-darjeeling",
-    distance_km: 78,
-    duration_hours: 3,
-    sponsor_count: 2
-  },
-  {
-    id: "kolkata-sundarbans",
-    title: "Kolkata to Sundarbans",
-    subtitle: "Mangrove Forest Journey",
-    slug: "kolkata-sundarbans",
-    distance_km: 110,
-    duration_hours: 4,
-    sponsor_count: 1
-  }
-];
+type Route = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  path_slug: string;
+  distance_km: number;
+  duration_hours: number;
+  sponsor_count: number;
+  hero_image?: string;
+};
 
 export function RoutesGrid() {
-  const [routes, setRoutes] = useState<typeof mockRoutes>([]);
+  const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulate loading delay
-    const timer = setTimeout(() => {
-      setRoutes(mockRoutes);
-      setLoading(false);
-    }, 1000);
+    const fetchRoutes = async () => {
+      try {
+        const firestore = getFirestoreDb();
+        if (!firestore) {
+          setError("Firebase not configured");
+          setLoading(false);
+          return;
+        }
 
-    return () => clearTimeout(timer);
+        const routesSnapshot = await getDocs(collection(firestore, "routes"));
+        const routesData = routesSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Route[];
+
+        setRoutes(routesData);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching routes:", err);
+        setError("Failed to load routes");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoutes();
   }, []);
 
   if (loading) {
-    return <GridSkeleton count={2} />;
+    return <GridSkeleton count={3} />;
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+
+  if (routes.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">No routes available yet.</p>
+      </div>
+    );
   }
 
   return (
@@ -49,7 +76,7 @@ export function RoutesGrid() {
       {routes.map((route, index) => (
         <motion.a
           key={route.id}
-          href={`/routes/${route.slug}`}
+          href={`/routes/${route.path_slug}`}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: index * 0.1, duration: 0.6 }}
@@ -57,36 +84,46 @@ export function RoutesGrid() {
           className="group clay-card rounded-2xl p-6 transition-all duration-300 block"
         >
           {/* Hero Image Placeholder */}
-          <div className="w-full h-40 bg-gradient-bg-primary rounded-xl mb-4 flex items-center justify-center overflow-hidden">
-            <svg
-              className="w-12 h-12 text-white/50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+          <div className="w-full h-40 bg-gradient-to-br from-primary to-accent rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+            {route.hero_image ? (
+              <img
+                src={route.hero_image}
+                alt={route.title}
+                className="w-full h-full object-cover"
               />
-            </svg>
+            ) : (
+              <svg
+                className="w-12 h-12 text-white/50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                />
+              </svg>
+            )}
           </div>
 
           {/* Content */}
           <h3 className="font-semibold text-xl mb-2 group-hover:text-accent transition-colors">
             {route.title}
           </h3>
-          <p className="text-sm text-ink/70 mb-4">{route.subtitle}</p>
+          {route.subtitle && (
+            <p className="text-sm text-muted-foreground mb-4">{route.subtitle}</p>
+          )}
 
           {/* Meta */}
           <div className="flex items-center justify-between text-sm">
-            <div className="flex gap-4 text-ink/60">
+            <div className="flex gap-4 text-muted-foreground">
               <span>📍 {route.distance_km} km</span>
               <span>⏱️ {route.duration_hours} hrs</span>
             </div>
             {route.sponsor_count > 0 && (
-              <div className="flex items-center gap-1 text-teal">
+              <div className="flex items-center gap-1 text-accent">
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"

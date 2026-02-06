@@ -2,7 +2,7 @@
     {
         "id": "siliguri-darjeeling",
         "title": "Siliguri to Darjeeling",
-        "subtitle": "Himalayan Mountain Adventure",
+        "subtitle": "78 kilometers through pine forests, tea estates, and switchback roads from the plains to 7,000 feet",
         "slug": "siliguri-kurseong-darjeeling",
         "distanceKm": 78,
         "durationHours": 3,
@@ -15,7 +15,7 @@
     {
         "id": "kolkata-sundarbans",
         "title": "Kolkata to Sundarbans",
-        "subtitle": "Mangrove Forest Journey",
+        "subtitle": "110 kilometers from the city into the world's largest mangrove forest, where rivers split into a hundred channels",
         "slug": "kolkata-sundarbans",
         "distanceKm": 110,
         "durationHours": 4,

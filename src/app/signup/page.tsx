@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mountain, ArrowLeft, Sparkles, Award, MapPin } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { getAssetPath } from "@/lib/utils";
 import { useRef } from "react";
 
 export default function SignupPage() {
@@ -31,7 +32,7 @@ export default function SignupPage() {
       {/* Left side: Premium Image & Content */}
       <section className="hidden lg:flex relative w-1/2 overflow-hidden h-screen sticky top-0">
         <Image
-          src="/images/premium-tea.png"
+          src={getAssetPath("/images/premium-tea.png")}
           alt="Darjeeling Tea Garden"
           fill
           className="object-cover"

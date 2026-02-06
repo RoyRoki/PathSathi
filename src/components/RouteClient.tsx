@@ -351,7 +351,7 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
           </Link>
         </div>
 
-        <div className="journey-header-content absolute bottom-24 left-12 z-20 max-w-3xl px-6">
+        <div className="journey-header-content absolute inset-0 z-20 flex flex-col items-center justify-center px-6">
           {/* Enhanced badges */}
           <div className="journey-header-badge flex items-center gap-4 mb-6">
             <div className="flex items-center gap-1.5 text-accent">
@@ -364,50 +364,20 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
               <span className="text-xs font-bold uppercase tracking-[0.3em]">Immersive Experience</span>
             </div>
           </div>
-          {/* Massive hero title with letter-by-letter animation */}
-          <h1 className="route-hero-title text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light text-white mb-6 drop-shadow-2xl tracking-[0.05em] md:tracking-[0.08em] lg:tracking-[0.10em] leading-[1.1] uppercase">
+          {/* Hero title with letter-by-letter animation */}
+          <h1 className="route-hero-title font-display text-4xl sm:text-5xl md:text-6xl font-light text-white mb-6 drop-shadow-2xl tracking-[0.05em] md:tracking-[0.08em] lg:tracking-[0.10em] leading-[1.1] uppercase text-center">
             {route.title}
           </h1>
           {/* Enhanced subtitle */}
-          <p className="route-hero-subtitle text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed drop-shadow-lg italic">
+          <p className="route-hero-subtitle text-lg md:text-xl text-white/80 max-w-2xl font-light leading-relaxed drop-shadow-lg italic text-center">
             {route.subtitle}
           </p>
         </div>
 
 
 
-        {/* SVG Curve Clip Path Definition */}
-        <svg width="0" height="0" style={{ position: 'absolute' }}>
-          <defs>
-            <clipPath id="hero-curve-clip" clipPathUnits="objectBoundingBox">
-              <path d="M0,0 L0,0.95 Q0.25,0.98 0.5,0.95 T1,0.95 L1,0 Z" />
-            </clipPath>
-          </defs>
-        </svg>
-
-        {/* Golden Accent Curve Line */}
-        <div className="absolute bottom-0 left-0 w-full z-20 pointer-events-none">
-          <svg
-            className="w-full h-16 md:h-24 lg:h-32"
-            viewBox="0 0 1440 320"
-            preserveAspectRatio="none"
-          >
-            <path
-              d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,112C672,96,768,96,864,112C960,128,1056,160,1152,160C1248,160,1344,128,1392,112L1440,96"
-              fill="none"
-              stroke="url(#gradient-line)"
-              strokeWidth="3"
-              className="opacity-50"
-            />
-            <defs>
-              <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset="50%" stopColor="#d4af37" />
-                <stop offset="100%" stopColor="transparent" />
-              </linearGradient>
-            </defs>
-          </svg>
-        </div>
+        {/* Bottom gradient fade to next section */}
+        <div className="absolute bottom-0 left-0 w-full h-32 z-20 pointer-events-none bg-gradient-to-t from-black to-transparent" />
       </section>
 
       {/* Scrollytelling Section */}
@@ -434,13 +404,13 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
           {/* Section Header */}
           <div className="text-center mb-16 space-y-4">
             <span className="text-accent text-xs font-bold uppercase tracking-[0.3em]">
-              Heritage Trail Partners
+              Travel Partners
             </span>
-            <h2 className="text-4xl md:text-5xl font-light text-white tracking-wide">
-              Curated Excellence
+            <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
+              Book This Route
             </h2>
             <p className="text-white/60 max-w-lg mx-auto font-light">
-              Experience this journey with our verified premium partners who ensure every moment is memorable.
+              Verified agencies offering this route. Pick one to view packages and pricing.
             </p>
           </div>
 

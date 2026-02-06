@@ -1,93 +1,29 @@
 /* ═══════════════════════════════════════════════════════════
    PathSathi Design System
-   Premium design tokens for Awwwards-level aesthetics
+   Layout, spacing, shadow, and animation tokens
+   Colors are defined in globals.css — no duplicates here
    ═══════════════════════════════════════════════════════════ */
 
 :root {
   /* ─────────────────────────────────────────────────────────
-     Color System
+     Typography Scale
      ───────────────────────────────────────────────────────── */
 
-  /* Primary Colors */
-  --color-ink-50: #f8f9fb;
-  --color-ink-100: #e8ebf0;
-  --color-ink-200: #d1d7e3;
-  --color-ink-300: #a9b5ca;
-  --color-ink-400: #7a8ba8;
-  --color-ink-500: #5a6d8c;
-  --color-ink-600: #475772;
-  --color-ink-700: #3a465d;
-  --color-ink-800: #2a3548;
-  --color-ink-900: #1a2232;
-  --color-ink: #0b1020;
-  /* Base ink */
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
 
-  /* Background & Surface */
-  --color-mist: #f5f7fb;
-  --color-mist-dark: #e8ebf0;
-  --color-surface: #ffffff;
-  --color-surface-elevated: rgba(255, 255, 255, 0.95);
-
-  /* Accent Colors */
-  --color-accent: #ff8a3d;
-  --color-accent-light: #ffb380;
-  --color-accent-dark: #e67429;
-
-  --color-teal: #1abf9c;
-  --color-teal-light: #4dd4b5;
-  --color-teal-dark: #15a084;
-
-  /* Semantic Colors */
-  --color-success: #10b981;
-  --color-success-light: #6ee7b7;
-  --color-success-dark: #059669;
-
-  --color-warning: #f59e0b;
-  --color-warning-light: #fbbf24;
-  --color-warning-dark: #d97706;
-
-  --color-error: #ef4444;
-  --color-error-light: #f87171;
-  --color-error-dark: #dc2626;
-
-  --color-info: #3b82f6;
-  --color-info-light: #60a5fa;
-  --color-info-dark: #2563eb;
-
-  /* ─────────────────────────────────────────────────────────
-       Typography Scale
-       ───────────────────────────────────────────────────────── */
-
-  /* Font Families */
-  --font-sans: "Space Grotesk", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
-  --font-display: "Space Grotesk", system-ui, sans-serif;
-  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
-
-  /* Font Sizes */
   --text-xs: 0.75rem;
-  /* 12px */
   --text-sm: 0.875rem;
-  /* 14px */
   --text-base: 1rem;
-  /* 16px */
   --text-lg: 1.125rem;
-  /* 18px */
   --text-xl: 1.25rem;
-  /* 20px */
   --text-2xl: 1.5rem;
-  /* 24px */
   --text-3xl: 1.875rem;
-  /* 30px */
   --text-4xl: 2.25rem;
-  /* 36px */
   --text-5xl: 3rem;
-  /* 48px */
   --text-6xl: 3.75rem;
-  /* 60px */
   --text-7xl: 4.5rem;
-  /* 72px */
 
-  /* Line Heights */
   --leading-none: 1;
   --leading-tight: 1.25;
   --leading-snug: 1.375;
@@ -95,7 +31,6 @@
   --leading-relaxed: 1.625;
   --leading-loose: 2;
 
-  /* Font Weights */
   --font-light: 300;
   --font-normal: 400;
   --font-medium: 500;
@@ -103,106 +38,79 @@
   --font-bold: 700;
 
   /* ─────────────────────────────────────────────────────────
-       Spacing Scale (0.25rem = 4px base)
-       ───────────────────────────────────────────────────────── */
+     Spacing Scale (0.25rem = 4px base)
+     ───────────────────────────────────────────────────────── */
 
   --space-0: 0;
   --space-1: 0.25rem;
-  /* 4px */
   --space-2: 0.5rem;
-  /* 8px */
   --space-3: 0.75rem;
-  /* 12px */
   --space-4: 1rem;
-  /* 16px */
   --space-5: 1.25rem;
-  /* 20px */
   --space-6: 1.5rem;
-  /* 24px */
   --space-8: 2rem;
-  /* 32px */
   --space-10: 2.5rem;
-  /* 40px */
   --space-12: 3rem;
-  /* 48px */
   --space-16: 4rem;
-  /* 64px */
   --space-20: 5rem;
-  /* 80px */
   --space-24: 6rem;
-  /* 96px */
   --space-32: 8rem;
-  /* 128px */
 
   /* ─────────────────────────────────────────────────────────
-       Shadow System (Elevation)
-       ───────────────────────────────────────────────────────── */
+     Shadow System (Elevation)
+     ───────────────────────────────────────────────────────── */
 
-  --shadow-xs: 0 1px 2px 0 rgba(11, 16, 32, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(11, 16, 32, 0.08),
-    0 1px 2px -1px rgba(11, 16, 32, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(11, 16, 32, 0.08),
-    0 2px 4px -2px rgba(11, 16, 32, 0.08);
-  --shadow-lg: 0 10px 15px -3px rgba(11, 16, 32, 0.08),
-    0 4px 6px -4px rgba(11, 16, 32, 0.08);
-  --shadow-xl: 0 20px 25px -5px rgba(11, 16, 32, 0.08),
-    0 8px 10px -6px rgba(11, 16, 32, 0.08);
-  --shadow-2xl: 0 25px 50px -12px rgba(11, 16, 32, 0.12);
+  --shadow-xs: 0 1px 2px 0 rgba(26, 39, 68, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(26, 39, 68, 0.08),
+    0 1px 2px -1px rgba(26, 39, 68, 0.08);
+  --shadow-md: 0 4px 6px -1px rgba(26, 39, 68, 0.08),
+    0 2px 4px -2px rgba(26, 39, 68, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(26, 39, 68, 0.08),
+    0 4px 6px -4px rgba(26, 39, 68, 0.08);
+  --shadow-xl: 0 20px 25px -5px rgba(26, 39, 68, 0.08),
+    0 8px 10px -6px rgba(26, 39, 68, 0.08);
+  --shadow-2xl: 0 25px 50px -12px rgba(26, 39, 68, 0.12);
 
-  /* Premium Clay Shadow */
-  --shadow-clay: 0 18px 45px rgba(15, 23, 42, 0.08),
+  --shadow-clay: 0 18px 45px rgba(26, 39, 68, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  --shadow-clay-hover: 0 24px 60px rgba(15, 23, 42, 0.12),
+  --shadow-clay-hover: 0 24px 60px rgba(26, 39, 68, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
-  /* Glow Effects */
-  --shadow-glow-accent: 0 0 20px rgba(255, 138, 61, 0.3),
-    0 0 40px rgba(255, 138, 61, 0.15);
-  --shadow-glow-teal: 0 0 20px rgba(26, 191, 156, 0.3),
-    0 0 40px rgba(26, 191, 156, 0.15);
+  --shadow-glow-accent: 0 0 20px rgba(210, 120, 60, 0.3),
+    0 0 40px rgba(210, 120, 60, 0.15);
 
   /* ─────────────────────────────────────────────────────────
-       Border Radius
-       ───────────────────────────────────────────────────────── */
+     Border Radius
+     ───────────────────────────────────────────────────────── */
 
   --radius-sm: 0.375rem;
-  /* 6px */
   --radius-md: 0.5rem;
-  /* 8px */
   --radius-lg: 0.75rem;
-  /* 12px */
   --radius-xl: 1rem;
-  /* 16px */
   --radius-2xl: 1.5rem;
-  /* 24px */
   --radius-3xl: 2rem;
-  /* 32px */
   --radius-full: 9999px;
 
   /* ─────────────────────────────────────────────────────────
-       Animation Tokens
-       ───────────────────────────────────────────────────────── */
+     Animation Tokens
+     ───────────────────────────────────────────────────────── */
 
-  /* Durations */
   --duration-instant: 100ms;
   --duration-fast: 200ms;
   --duration-normal: 300ms;
   --duration-slow: 500ms;
   --duration-slower: 700ms;
 
-  /* Easings */
   --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* Premium easing for micro-interactions */
   --ease-premium: cubic-bezier(0.23, 1, 0.32, 1);
 
   /* ─────────────────────────────────────────────────────────
-       Backdrop Blur
-       ───────────────────────────────────────────────────────── */
+     Backdrop Blur
+     ───────────────────────────────────────────────────────── */
 
   --blur-sm: 4px;
   --blur-md: 8px;
@@ -210,8 +118,8 @@
   --blur-xl: 24px;
 
   /* ─────────────────────────────────────────────────────────
-       Z-Index Scale
-       ───────────────────────────────────────────────────────── */
+     Z-Index Scale
+     ───────────────────────────────────────────────────────── */
 
   --z-base: 1;
   --z-dropdown: 100;
@@ -226,8 +134,6 @@
 /* ═══════════════════════════════════════════════════════════
    Premium Utility Classes
    ═══════════════════════════════════════════════════════════ */
-
-/* ─────── Glassmorphism/Clay Cards ─────── */
 
 .clay-card {
   background: rgba(255, 255, 255, 0.78);
@@ -258,48 +164,6 @@
   backdrop-filter: blur(var(--blur-xl));
 }
 
-/* ─────── Gradient Text ─────── */
-
-.gradient-text-accent {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-teal) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.gradient-text-primary {
-  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-600) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ─────── Gradient Backgrounds ─────── */
-
-.gradient-bg-hero {
-  background: radial-gradient(circle at 10% 20%, rgba(255, 138, 61, 0.15), transparent 40%),
-    radial-gradient(circle at 80% 10%, rgba(26, 191, 156, 0.15), transparent 45%),
-    linear-gradient(180deg, var(--color-mist) 0%, var(--color-surface) 100%);
-}
-
-.gradient-bg-primary {
-  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-teal) 100%);
-}
-
-.gradient-bg-dark {
-  background: linear-gradient(135deg, var(--color-ink-800) 0%, var(--color-ink-900) 100%);
-}
-
-/* ─────── Glow Effects ─────── */
-
-.glow-accent {
-  box-shadow: var(--shadow-glow-accent);
-}
-
-.glow-teal {
-  box-shadow: var(--shadow-glow-teal);
-}
-
 /* ─────── Focus States ─────── */
 
 .focus-ring {
@@ -308,15 +172,8 @@
 }
 
 .focus-ring:focus-visible {
-  box-shadow: 0 0 0 3px var(--color-ink-100),
-    0 0 0 5px var(--color-accent);
-}
-
-/* ─────── Smooth Scroll Container ─────── */
-
-.smooth-scroll-container {
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 0 0 3px hsl(var(--border)),
+    0 0 0 5px hsl(var(--accent));
 }
 
 /* ─────── Premium Button Base ─────── */
@@ -341,7 +198,7 @@
   cursor: not-allowed;
 }
 
-/* ─────── Loading Spinner ─────── */
+/* ─────── Animations ─────── */
 
 @keyframes spin {
   to {
@@ -353,57 +210,34 @@
   animation: spin 1s linear infinite;
 }
 
-/* ─────── Fade In Animation ─────── */
-
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .animate-fade-in {
   animation: fadeIn var(--duration-normal) var(--ease-smooth);
 }
 
-/* ─────── Slide Up Animation ─────── */
-
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
   animation: slideUp var(--duration-normal) var(--ease-premium);
 }
 
-/* ─────── Skeleton Loader ─────── */
-
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 .skeleton {
   background: linear-gradient(90deg,
-      var(--color-ink-100) 25%,
-      var(--color-ink-50) 50%,
-      var(--color-ink-100) 75%);
+      hsl(var(--muted)) 25%,
+      hsl(var(--background)) 50%,
+      hsl(var(--muted)) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-md);
@@ -413,24 +247,12 @@
    Responsive Utilities
    ═══════════════════════════════════════════════════════════ */
 
-/* Mobile-first approach */
-
 @media (max-width: 639px) {
-  .mobile-only {
-    display: block;
-  }
-
-  .desktop-only {
-    display: none;
-  }
+  .mobile-only { display: block; }
+  .desktop-only { display: none; }
 }
 
 @media (min-width: 640px) {
-  .mobile-only {
-    display: none;
-  }
-
-  .desktop-only {
-    display: block;
-  }
+  .mobile-only { display: none; }
+  .desktop-only { display: block; }
 }

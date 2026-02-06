@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { getFirebaseAuth, getFirestoreDb } from "@/lib/firebase";
+import { getAssetPath } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -299,76 +300,141 @@ export default function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-background relative flex items-center justify-center p-6 overflow-hidden">
-        {/* Background Layer */}
-        <div className="fixed inset-0 -z-10 opacity-60 pointer-events-none scale-105 animate-pulse-slow">
-          <Image
-            src="/images/login-bg.png"
-            alt="Admin Background"
-            fill
-            className="object-cover"
-          />
+      <div className="min-h-screen relative flex items-center justify-center p-4 overflow-hidden">
+        {/* Animated Gradient Background */}
+        <div className="fixed inset-0 -z-10 bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-600/20 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-violet-600/20 via-transparent to-transparent" />
         </div>
-        <div className="fixed inset-0 -z-5 bg-black/40 backdrop-blur-sm" />
-        <div className="fixed inset-0 -z-5 noise-bg opacity-20" />
+
+        {/* Floating Orbs */}
+        <div className="fixed top-1/4 -left-48 w-96 h-96 bg-blue-500/30 rounded-full blur-[120px] animate-pulse" />
+        <div className="fixed bottom-1/4 -right-48 w-96 h-96 bg-violet-500/30 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[140px]" />
+
+        {/* Subtle Grid Pattern */}
+        <div className="fixed inset-0 -z-5 opacity-20" style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px)', backgroundSize: '50px 50px' }} />
+
+        {/* Animated Stars/Particles */}
+        <div className="fixed inset-0 -z-5">
+          {[...Array(20)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-1 h-1 bg-white/40 rounded-full animate-pulse"
+              style={{
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 3}s`
+              }}
+            />
+          ))}
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "power4.out" }}
-          className="w-full max-w-lg"
+          transition={{ duration: 0.8, ease: [0.19, 1, 0.22, 1] }}
+          className="w-full max-w-md relative z-10"
         >
-          <Card className="rounded-[3.5rem] p-16 border border-white/10 bg-black/40 backdrop-blur-3xl shadow-3xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
+          {/* Glassmorphic Card */}
+          <div className="relative">
+            {/* Glow Effect Behind Card */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 rounded-[3rem] blur-2xl opacity-20 animate-pulse" />
 
-            <div className="relative text-center mb-12">
-              <div className="w-24 h-24 mx-auto mb-8 rounded-[2rem] bg-primary/10 border border-primary/20 flex items-center justify-center shadow-inner">
-                <ShieldAlert className="w-12 h-12 text-primary" />
+            <div className="relative bg-white/10 backdrop-blur-2xl rounded-[2.5rem] p-10 border border-white/20 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)]">
+              {/* Inner Glow */}
+              <div className="absolute inset-0 rounded-[2.5rem] bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+
+              {/* Floating Accent Orbs */}
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-violet-500/20 rounded-full blur-3xl" />
+
+              <div className="relative">
+                {/* Icon Section */}
+                <div className="flex justify-center mb-8">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-violet-600 rounded-3xl blur-xl opacity-50" />
+                    <div className="relative w-20 h-20 bg-gradient-to-br from-blue-500 to-violet-600 rounded-3xl flex items-center justify-center shadow-2xl">
+                      <ShieldAlert className="w-10 h-10 text-white" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div className="text-center mb-10">
+                  <h1 className="text-4xl font-black mb-2 bg-gradient-to-r from-white via-blue-100 to-violet-100 bg-clip-text text-transparent tracking-tight">
+                    TERMINAL ALPHA
+                  </h1>
+                  <p className="text-blue-200/70 text-xs font-semibold uppercase tracking-[0.3em]">
+                    Authorized Access Only
+                  </p>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-5">
+                  {/* Email Input */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-200/80 ml-2">
+                      Access Identifier
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="relative h-14 bg-white/5 border-white/20 hover:border-white/30 focus:border-blue-400/50 rounded-2xl backdrop-blur-xl transition-all text-white placeholder:text-white/40 font-medium px-5 focus:bg-white/10 focus:ring-2 focus:ring-blue-400/20"
+                        placeholder="admin@pathsathi.com"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password Input */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-200/80 ml-2">
+                      Security Key
+                    </label>
+                    <div className="relative group">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-violet-500/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                      <Input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="relative h-14 bg-white/5 border-white/20 hover:border-white/30 focus:border-violet-400/50 rounded-2xl backdrop-blur-xl transition-all text-white placeholder:text-white/40 font-medium px-5 focus:bg-white/10 focus:ring-2 focus:ring-violet-400/20"
+                        placeholder="Enter secure passkey"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-2">
+                    <Button
+                      size="lg"
+                      className="relative w-full h-14 rounded-2xl text-base font-bold overflow-hidden group bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 border-0 shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300"
+                      onClick={login}
+                      isLoading={isLoading}
+                    >
+                      <span className="relative z-10 text-white uppercase tracking-wider">
+                        Establish Connection
+                      </span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/0 via-white/20 to-cyan-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-10 pt-6 border-t border-white/10 text-center">
+                  <div className="flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200/40">
+                    <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                    <span>Secure Node v4.2</span>
+                    <span className="opacity-50">•</span>
+                    <span>Encrypted Protocol</span>
+                  </div>
+                </div>
               </div>
-
-              <h1 className="text-4xl font-black mb-4 tracking-tight uppercase">Terminal <span className="text-primary">Alpha</span></h1>
-              <p className="text-muted-foreground text-sm font-bold uppercase tracking-[0.2em] opacity-80">
-                Authorized Personnel Only
-              </p>
             </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Access Identifier</label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-2xl h-16 bg-white/5 border-white/10 focus:bg-white/10 transition-all text-lg font-medium px-6"
-                  placeholder="admin@pathsathi.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground ml-1">Security Key</label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="rounded-2xl h-16 bg-white/5 border-white/10 focus:bg-white/10 transition-all text-lg font-medium px-6"
-                  placeholder="••••••••"
-                />
-              </div>
-              <Button
-                size="lg"
-                className="w-full h-16 rounded-2xl text-lg font-black shadow-2xl mt-8 bg-primary hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
-                onClick={login}
-                isLoading={isLoading}
-              >
-                Establish Connection
-              </Button>
-            </div>
-
-            <div className="mt-12 pt-8 border-t border-white/5 text-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40">
-                Node 7-42-Beta • Secure Protocol v4.0
-              </p>
-            </div>
-          </Card>
+          </div>
         </motion.div>
       </div>
     );
@@ -392,7 +458,7 @@ export default function AdminPage() {
       {/* Background Layer */}
       <div className="fixed inset-0 -z-10 opacity-40 dark:opacity-30 pointer-events-none">
         <Image
-          src="/images/dashboard-bg.png"
+          src={getAssetPath("/images/dashboard-bg.png")}
           alt="Himalayan Background"
           fill
           className="object-cover"
@@ -504,12 +570,12 @@ export default function AdminPage() {
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
                     <h2 className="text-3xl font-black mb-8 tracking-tight">Executive Control</h2>
                     <div className="flex flex-wrap gap-6">
-                      <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl hover:scale-105 transition-transform" onClick={() => setActiveTab("routes")}>
+                      <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setActiveTab("routes")}>
                         <Plus className="mr-2 w-5 h-5" />
                         Provision New Journey
                       </Button>
                       {agencies.length > 0 && (
-                        <Button variant="secondary" size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl hover:scale-105 transition-transform" onClick={() => setActiveTab("agencies")}>
+                        <Button variant="secondary" size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setActiveTab("agencies")}>
                           Authorize {agencies.length} New Agencies
                         </Button>
                       )}
@@ -564,7 +630,7 @@ export default function AdminPage() {
                                 </div>
                               </div>
                               <div className="flex gap-4">
-                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl hover:scale-105 transition-transform" onClick={() => approveAgency(agency.id)} isLoading={isLoading}>
+                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveAgency(agency.id)} isLoading={isLoading}>
                                   <CheckCircle2 className="mr-2 w-5 h-5" />
                                   Authorize
                                 </Button>
@@ -611,7 +677,7 @@ export default function AdminPage() {
                                 </div>
                               </div>
                               <div className="flex gap-4">
-                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl hover:scale-105 transition-transform" onClick={() => approveRequest(request.id, request.route_id, request.agency_uid)} isLoading={isLoading}>
+                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveRequest(request.id, request.route_id, request.agency_uid)} isLoading={isLoading}>
                                   Grant Access
                                 </Button>
                                 <Button variant="ghost" size="lg" className="rounded-2xl h-14 px-10 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={() => denyRequest(request.id)} isLoading={isLoading}>
@@ -640,7 +706,7 @@ export default function AdminPage() {
                       <h2 className="text-4xl font-black tracking-tight mb-1">Route Archive</h2>
                       <p className="text-sm text-muted-foreground font-medium">Manage and provision the system journey catalog</p>
                     </div>
-                    <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl hover:scale-105 transition-transform" onClick={() => setShowRouteModal(true)}>
+                    <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setShowRouteModal(true)}>
                       <Plus className="mr-2 w-6 h-6" />
                       Add New Manifest
                     </Button>
@@ -790,7 +856,7 @@ export default function AdminPage() {
                   <div className="flex gap-6 pt-8">
                     <Button
                       size="lg"
-                      className="flex-1 h-16 rounded-2xl text-lg font-black shadow-2xl hover:scale-105 transition-transform"
+                      className="flex-1 h-16 rounded-2xl text-lg font-black shadow-2xl"
                       onClick={createRoute}
                       isLoading={isLoading}
                     >

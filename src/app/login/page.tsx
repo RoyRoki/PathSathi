@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Mountain, ArrowLeft, ShieldCheck, Star, Users } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
+import { getAssetPath } from "@/lib/utils";
 import { useRef } from "react";
 
 export default function LoginPage() {
@@ -31,7 +32,7 @@ export default function LoginPage() {
       {/* Left side: Premium Image */}
       <section className="hidden lg:flex relative w-1/2 overflow-hidden h-screen sticky top-0">
         <Image
-          src="/images/luxury-monastery.png"
+          src={getAssetPath("/images/luxury-monastery.png")}
           alt="Himalayan Monastery"
           fill
           className="object-cover"

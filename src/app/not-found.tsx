@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen gradient-bg-hero flex items-center justify-center p-6 text-center">
+        <div className="min-h-screen bg-muted flex items-center justify-center p-6 text-center">
             <div className="max-w-md w-full">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -18,7 +18,7 @@ export default function NotFound() {
                     </div>
 
                     <h1 className="text-3xl font-bold mb-4">Off the Beaten Path?</h1>
-                    <p className="text-ink/60 mb-8">
+                    <p className="text-muted-foreground mb-8">
                         The page you're looking for seems to have wandered off into the mountains.
                         Let's get you back on the main trail.
                     </p>

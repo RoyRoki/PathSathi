@@ -35,7 +35,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 <div className="relative">
                     {/* Left Icon */}
                     {leftIcon && (
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                             {leftIcon}
                         </div>
                     )}
@@ -45,13 +45,13 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         ref={ref}
                         type={inputType}
                         className={`
-              w-full rounded-xl border bg-white px-4 py-3 text-base text-ink
+              w-full rounded-xl border bg-white px-4 py-3 text-base text-foreground
               transition-all duration-300
               ${leftIcon ? "pl-11" : ""}
               ${rightIcon || isPasswordType ? "pr-11" : ""}
               ${error
                                 ? "border-error focus:border-error focus:ring-2 focus:ring-error/20"
-                                : "border-ink/10 focus:border-accent focus:ring-2 focus:ring-accent/20"
+                                : "border-border focus:border-accent focus:ring-2 focus:ring-accent/20"
                             }
               ${label ? "pt-6" : ""}
               outline-none
@@ -70,8 +70,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 transition-all duration-200
                 ${leftIcon ? "left-11" : "left-4"}
                 ${isFocused || hasValue
-                                    ? "top-2 text-xs text-ink/60"
-                                    : "top-1/2 -translate-y-1/2 text-base text-ink/40"
+                                    ? "top-2 text-xs text-muted-foreground"
+                                    : "top-1/2 -translate-y-1/2 text-base text-muted-foreground"
                                 }
               `}
                             animate={{
@@ -91,7 +91,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     {isPasswordType ? (
                         <button
                             type="button"
-                            className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 hover:text-ink/70 transition-colors"
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                             onClick={() => setShowPassword(!showPassword)}
                             tabIndex={-1}
                         >
@@ -133,7 +133,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         </button>
                     ) : (
                         rightIcon && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-ink/40 pointer-events-none">
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none">
                                 {rightIcon}
                             </div>
                         )
@@ -167,7 +167,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
                 {/* Helper Text */}
                 {helperText && !error && (
-                    <p className="mt-1.5 text-sm text-ink/60">{helperText}</p>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{helperText}</p>
                 )}
             </div>
         );

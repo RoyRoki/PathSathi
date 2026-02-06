@@ -17,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { getFirebaseAuth, getFirestoreDb } from "@/lib/firebase";
 import { routes as mockRoutes } from "@/lib/mock-data";
+import { getAssetPath } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -335,7 +336,7 @@ export default function DashboardPage() {
       {/* Background Layer */}
       <div className="fixed inset-0 -z-10 opacity-30 dark:opacity-20 pointer-events-none">
         <Image
-          src="/images/dashboard-bg.png"
+          src={getAssetPath("/images/dashboard-bg.png")}
           alt="Dashboard Background"
           fill
           className="object-cover"
@@ -623,7 +624,7 @@ export default function DashboardPage() {
                           <Card key={route.id} className="relative overflow-hidden rounded-[2rem] border-none bg-background/50 group hover:shadow-3xl transition-all duration-500">
                             <div className="relative h-48 w-full overflow-hidden">
                               <Image
-                                src={route.hero_image || "/images/mountain_road_journey_1770289426463.png"}
+                                src={route.hero_image || getAssetPath("/images/mountain_road_journey_1770289426463.png")}
                                 alt={route.title}
                                 fill
                                 className="object-cover group-hover:scale-110 transition-transform duration-700"
