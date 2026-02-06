@@ -4,15 +4,23 @@ type PageProps = {
   params: { slug: string };
 };
 
-// Generate static paths for all routes
+// Allow routes not in generateStaticParams to be rendered dynamically in dev
+// For production build with output: export, only listed routes are generated
+export const dynamicParams = true;
+
+// Generate static paths for all known routes
+// Add any new routes here when you create them in Firestore
 export async function generateStaticParams() {
-  // For now, just export the siliguri-kurseong-darjeeling route
-  // Add more routes here as needed
   return [
-    { slug: 'siliguri-kurseong-darjeeling' }
+    { slug: 'siliguri-kurseong-darjeeling' },
+    // Add more routes here when they have assets:
+    // { slug: 'siliguri-darjeeling' },
+    // { slug: 'kolkata-sundarbans' },
   ];
 }
 
+// tid query param is handled client-side in RouteClient via useSearchParams
 export default function RoutePage({ params }: PageProps) {
   return <RouteClient slug={params.slug} />;
 }
+

@@ -19,7 +19,8 @@ import {
   Timestamp,
   updateDoc,
   where,
-  increment
+  increment,
+  deleteDoc
 } from "firebase/firestore";
 import Link from "next/link";
 import Image from "next/image";
@@ -31,6 +32,7 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
 import {
+  MapPin,
   ShieldAlert,
   Users,
   Map as MapIcon,
@@ -43,7 +45,12 @@ import {
   Search,
   LayoutDashboard,
   Activity,
-  ArrowRight
+  ArrowRight,
+  ChevronDown,
+  Mail,
+  Phone,
+  MessageCircle,
+  Globe
 } from "lucide-react";
 
 const trialDays = 7;
@@ -57,12 +64,26 @@ export default function AdminPage() {
   const [authChecked, setAuthChecked] = useState(false);
   const [agencies, setAgencies] = useState<any[]>([]);
   const [requests, setRequests] = useState<any[]>([]);
+  const [expandedAgencies, setExpandedAgencies] = useState<Set<string>>(new Set());
+  const [agencySearchQuery, setAgencySearchQuery] = useState("");
+
+  const toggleAgencyExpand = (id: string) => {
+    const newExpanded = new Set(expandedAgencies);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedAgencies(newExpanded);
+  };
   const [allRoutes, setAllRoutes] = useState<any[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error" | "info">("info");
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [isLoading, setIsLoading] = useState(false);
   const [showRouteModal, setShowRouteModal] = useState(false);
+  const [availableFolders, setAvailableFolders] = useState<string[]>([]);
+  const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
 
   const [routeForm, setRouteForm] = useState({
     title: "",
@@ -72,7 +93,8 @@ export default function AdminPage() {
     total_frames: 1,
     distance_km: 0,
     duration_hours: 0,
-    hero_image: ""
+    hero_image: "",
+    status: "inactive" as "active" | "inactive"
   });
 
   useEffect(() => {
@@ -92,7 +114,7 @@ export default function AdminPage() {
         return;
       }
       const tokenResult = await getIdTokenResult(user);
-      const adminClaim = Boolean(tokenResult.claims.admin);
+      const adminClaim = Boolean(tokenResult.claims.admin) || user.email === "admin@gmail.com";
       setIsAdmin(adminClaim);
       setAuthChecked(true);
       if (adminClaim) {
@@ -104,7 +126,17 @@ export default function AdminPage() {
   }, []);
 
   const loadAllData = async () => {
-    await Promise.all([loadPending(), loadAllRoutes()]);
+    await Promise.all([loadPending(), loadAllRoutes(), loadFolders()]);
+  };
+
+  const loadFolders = async () => {
+    try {
+      const res = await fetch('/api/route-folders');
+      const data = await res.json();
+      if (data.folders) setAvailableFolders(data.folders);
+    } catch (e) {
+      console.error("Failed to load folders", e);
+    }
   };
 
   const loadPending = async () => {
@@ -137,7 +169,7 @@ export default function AdminPage() {
   };
 
   const login = async () => {
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, 'login': true }));
     try {
       const auth = getFirebaseAuth();
       if (!auth) {
@@ -147,16 +179,19 @@ export default function AdminPage() {
     } catch (error) {
       showMessage("Admin login failed. Please check your credentials.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, 'login': false }));
     }
   };
 
   const approveAgency = async (agencyId: string) => {
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, [`approve-agency-${agencyId}`]: true }));
     try {
-      const expiry = new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000);
       const firestore = getFirestoreDb();
       if (!firestore) return;
+
+      // Set 7-day trial period from now
+      const now = new Date();
+      const expiry = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000);
 
       await updateDoc(doc(firestore, "agencies", agencyId), {
         is_verified: true,
@@ -170,12 +205,12 @@ export default function AdminPage() {
     } catch (error) {
       showMessage("Failed to approve agency.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, [`approve-agency-${agencyId}`]: false }));
     }
   };
 
   const denyAgency = async (agencyId: string) => {
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, [`deny-agency-${agencyId}`]: true }));
     try {
       const firestore = getFirestoreDb();
       if (!firestore) return;
@@ -189,21 +224,43 @@ export default function AdminPage() {
     } catch (error) {
       showMessage("Failed to deny agency.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, [`deny-agency-${agencyId}`]: false }));
     }
   };
 
   const approveRequest = async (requestId: string, routeId: string, agencyUid: string) => {
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, [`approve-request-${requestId}`]: true }));
     try {
       const firestore = getFirestoreDb();
       if (!firestore) return;
 
+      // Set 7-day trial period from now
+      const now = new Date();
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      // Update the purchase request status
       await updateDoc(doc(firestore, "routePurchases", requestId), {
         status: "approved",
         approved_at: serverTimestamp()
       });
 
+      // Update the agency with trial period
+      await updateDoc(doc(firestore, "agencies", agencyUid), {
+        trial_start: Timestamp.fromDate(now),
+        trial_expiry: Timestamp.fromDate(sevenDaysFromNow),
+        updated_at: serverTimestamp()
+      });
+
+      // Add route access to agency
+      const routeAccessRef = doc(firestore, "agencies", agencyUid, "routes", routeId);
+      await setDoc(routeAccessRef, {
+        route_id: routeId,
+        granted_at: serverTimestamp(),
+        trial_start: Timestamp.fromDate(now),
+        trial_expiry: Timestamp.fromDate(sevenDaysFromNow)
+      });
+
+      // Update route sponsor count and featured agency
       await runTransaction(firestore, async (transaction) => {
         const routeRef = doc(firestore, "routes", routeId);
         const routeSnap = await transaction.get(routeRef);
@@ -215,30 +272,102 @@ export default function AdminPage() {
       });
 
       await loadAllData();
-      showMessage("Route request approved!", "success");
+      showMessage("Request approved successfully!", "success");
     } catch (error) {
       showMessage("Failed to approve request.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, [`approve-request-${requestId}`]: false }));
     }
   };
 
   const denyRequest = async (requestId: string) => {
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, [`deny-request-${requestId}`]: true }));
     try {
       const firestore = getFirestoreDb();
       if (!firestore) return;
 
       await updateDoc(doc(firestore, "routePurchases", requestId), {
-        status: "denied"
+        status: "denied",
+        denied_at: serverTimestamp()
       });
 
       await loadPending();
-      showMessage("Route request denied.", "info");
+      showMessage("Request denied.", "info");
     } catch (error) {
       showMessage("Failed to deny request.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, [`deny-request-${requestId}`]: false }));
+    }
+  };
+
+  const deleteRoute = async (routeId: string) => {
+    if (!window.confirm("Are you sure you want to delete this route? This cannot be undone.")) return;
+    setLoadingStates(prev => ({ ...prev, [`delete-route-${routeId}`]: true }));
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+      await deleteDoc(doc(firestore, "routes", routeId));
+      await loadAllRoutes();
+      showMessage("Route deleted successfully.", "success");
+    } catch (error) {
+      showMessage("Failed to delete route.", "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [`delete-route-${routeId}`]: false }));
+    }
+  };
+
+  const openEditModal = (route: any) => {
+    setEditingRouteId(route.id);
+    setRouteForm({
+      title: route.title,
+      subtitle: route.subtitle || "",
+      path_slug: route.path_slug,
+      asset_folder: route.asset_folder || "dummy",
+      total_frames: route.total_frames || 1,
+      distance_km: route.distance_km || 0,
+      duration_hours: route.duration_hours || 0,
+      hero_image: route.hero_image || "",
+      status: route.status || "inactive"
+    });
+    setShowRouteModal(true);
+  };
+
+  const handleRouteSubmit = async () => {
+    if (editingRouteId) {
+      await updateRoute();
+    } else {
+      await createRoute();
+    }
+  };
+
+  const updateRoute = async () => {
+    if (!editingRouteId) return;
+    setLoadingStates(prev => ({ ...prev, 'route-submit': true }));
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+
+      const routeRef = doc(firestore, "routes", editingRouteId);
+
+      await updateDoc(routeRef, {
+        title: routeForm.title,
+        subtitle: routeForm.subtitle,
+        asset_folder: routeForm.asset_folder,
+        total_frames: routeForm.total_frames,
+        distance_km: routeForm.distance_km,
+        duration_hours: routeForm.duration_hours,
+        hero_image: routeForm.hero_image,
+        updated_at: serverTimestamp()
+      });
+
+      setShowRouteModal(false);
+      setEditingRouteId(null);
+      await loadAllRoutes();
+      showMessage("Route updated successfully!", "success");
+    } catch (error) {
+      showMessage("Failed to update route.", "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, 'route-submit': false }));
     }
   };
 
@@ -248,7 +377,7 @@ export default function AdminPage() {
       return;
     }
 
-    setIsLoading(true);
+    setLoadingStates(prev => ({ ...prev, 'route-submit': true }));
     try {
       const firestore = getFirestoreDb();
       if (!firestore) return;
@@ -262,6 +391,7 @@ export default function AdminPage() {
         distance_km: routeForm.distance_km,
         duration_hours: routeForm.duration_hours,
         hero_image: routeForm.hero_image,
+        status: routeForm.status,
         sponsor_count: 0,
         created_at: serverTimestamp()
       });
@@ -274,25 +404,117 @@ export default function AdminPage() {
         total_frames: 1,
         distance_km: 0,
         duration_hours: 0,
-        hero_image: ""
+        hero_image: "",
+        status: "inactive"
       });
 
       setShowRouteModal(false);
+      setEditingRouteId(null);
       await loadAllRoutes();
       showMessage("Route created successfully!", "success");
     } catch (error) {
       showMessage("Failed to create route.", "error");
     } finally {
-      setIsLoading(false);
+      setLoadingStates(prev => ({ ...prev, 'route-submit': false }));
+    }
+  };
+
+  const toggleRouteStatus = async (routeId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "active" ? "inactive" : "active";
+    setLoadingStates(prev => ({ ...prev, [`toggle-route-${routeId}`]: true }));
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+
+      await updateDoc(doc(firestore, "routes", routeId), {
+        status: newStatus,
+        updated_at: serverTimestamp()
+      });
+
+      await loadAllRoutes();
+      showMessage(`Route ${newStatus === "active" ? "activated" : "deactivated"} successfully!`, "success");
+    } catch (error: any) {
+      console.error("Toggle route status error:", error);
+      showMessage(`Failed to update route status: ${error.code || error.message}`, "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [`toggle-route-${routeId}`]: false }));
+    }
+  };
+
+  const seedInitialData = async () => {
+    setLoadingStates(prev => ({ ...prev, 'seed': true }));
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+
+      // Create Siliguri-Kurseong-Darjeeling route
+      await setDoc(doc(firestore, "routes", "siliguri-kurseong-darjeeling"), {
+        title: "Siliguri to Darjeeling",
+        subtitle: "Via Kurseong",
+        path_slug: "siliguri-kurseong-darjeeling",
+        asset_folder: "siliguri-kurseong-darjeeling",
+        total_frames: 4000,
+        desktop_total_frames: 4000,
+        distance_km: 65,
+        duration_hours: 3,
+        hero_image: "/images/darjeeling-hero.jpg",
+        status: "active",
+        sponsor_count: 0,
+        created_at: serverTimestamp()
+      });
+
+      // Create Kolkata-Sundarbans route (Inactive)
+      await setDoc(doc(firestore, "routes", "kolkata-sundarbans"), {
+        title: "Kolkata to Sundarbans",
+        subtitle: "River Delta Journey",
+        path_slug: "kolkata-sundarbans",
+        asset_folder: "kolkata-sundarbans",
+        total_frames: 1000,
+        desktop_total_frames: 1000,
+        distance_km: 100,
+        duration_hours: 5,
+        hero_image: "/images/sundarbans-hero.jpg",
+        status: "inactive",
+        sponsor_count: 0,
+        created_at: serverTimestamp()
+      });
+
+      // Create Admin User entry
+      const auth = getFirebaseAuth();
+      if (auth && auth.currentUser) {
+        await setDoc(doc(firestore, "agencies", auth.currentUser.uid), {
+          uid: auth.currentUser.uid,
+          email: auth.currentUser.email,
+          name: "Admin User",
+          is_verified: true,
+          role: "admin",
+          status: "active",
+          created_at: serverTimestamp()
+        }, { merge: true });
+      }
+
+      await loadAllRoutes();
+      showMessage("Database seeded successfully!", "success");
+    } catch (error) {
+      console.error(error);
+      showMessage("Failed to seed data.", "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, 'seed': false }));
     }
   };
 
   if (!authChecked) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-          <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">Initializing Admin Console...</p>
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <div className="absolute inset-0 h-16 w-16 animate-ping rounded-full border-4 border-primary opacity-20" style={{ animationDuration: '2s' }} />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-widest text-foreground mb-1">PathSathi Console</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Establishing secure connection...</p>
+          </div>
         </div>
       </div>
     );
@@ -413,7 +635,7 @@ export default function AdminPage() {
                       size="lg"
                       className="relative w-full h-14 rounded-2xl text-base font-bold overflow-hidden group bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-500 hover:to-violet-500 border-0 shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-[0_0_40px_rgba(59,130,246,0.5)] transition-all duration-300"
                       onClick={login}
-                      isLoading={isLoading}
+                      isLoading={loadingStates['login']}
                     >
                       <span className="relative z-10 text-white uppercase tracking-wider">
                         Establish Connection
@@ -508,7 +730,7 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid lg:grid-cols-[280px_1fr] gap-12 items-start">
           {/* Sidebar Navigation */}
-          <aside className="space-y-2 sticky top-32">
+          <aside className="space-y-2 sticky top-32 bg-white/5 dark:bg-black/20 backdrop-blur-xl rounded-3xl p-4 border border-white/10 shadow-2xl">
             <div className="px-4 mb-6">
               <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">Management Console</h2>
             </div>
@@ -516,9 +738,9 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold tracking-tight transition-all relative overflow-hidden group ${activeTab === tab.id
-                  ? "bg-primary text-white shadow-2xl translate-x-1"
-                  : "text-muted-foreground hover:bg-white/10 dark:hover:bg-white/5 hover:text-foreground"
+                className={`w-full flex items-center gap-4 px-6 py-4 rounded-2xl font-bold tracking-tight transition-all duration-300 relative overflow-hidden group ${activeTab === tab.id
+                  ? "bg-primary text-white shadow-2xl translate-x-1 scale-105"
+                  : "text-muted-foreground hover:bg-white/10 dark:hover:bg-white/5 hover:text-foreground hover:scale-102"
                   }`}
               >
                 <tab.icon className={`w-5 h-5 ${activeTab === tab.id ? "text-white" : "group-hover:scale-110 transition-transform duration-300"}`} />
@@ -556,7 +778,7 @@ export default function AdminPage() {
                 >
                   <div className="grid md:grid-cols-3 gap-8">
                     {mainStats.map((stat, i) => (
-                      <Card key={i} className="p-8 border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl shadow-3xl hover:translate-y-[-6px] transition-all duration-500 group">
+                      <Card key={i} className="p-8 border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl shadow-3xl hover:translate-y-[-6px] hover:scale-105 transition-all duration-500 group cursor-pointer">
                         <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                           <stat.icon className="w-7 h-7" />
                         </div>
@@ -568,15 +790,21 @@ export default function AdminPage() {
 
                   <Card className="rounded-[3rem] p-12 border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl shadow-3xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32" />
-                    <h2 className="text-3xl font-black mb-8 tracking-tight">Executive Control</h2>
+                    <h2 className="text-3xl font-black mb-8 tracking-tight font-sans">Executive Control</h2>
                     <div className="flex flex-wrap gap-6">
                       <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setActiveTab("routes")}>
                         <Plus className="mr-2 w-5 h-5" />
-                        Provision New Journey
+                        Create New Route
                       </Button>
+                      {agencies.length === 0 && (
+                        <Button variant="outline" size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl border-white/20 hover:bg-white/10" onClick={seedInitialData} isLoading={loadingStates['seed']}>
+                          <Activity className="mr-2 w-5 h-5" />
+                          Seed Database
+                        </Button>
+                      )}
                       {agencies.length > 0 && (
                         <Button variant="secondary" size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setActiveTab("agencies")}>
-                          Authorize {agencies.length} New Agencies
+                          Authorize {agencies.length} New {agencies.length === 1 ? 'Agency' : 'Agencies'}
                         </Button>
                       )}
                     </div>
@@ -596,54 +824,160 @@ export default function AdminPage() {
                       <h2 className="text-4xl font-black tracking-tight">Agency Authorization</h2>
                       <div className="relative group">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <input className="pl-11 pr-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-sm focus:ring-2 focus:ring-primary/20 transition-all w-full md:w-64 placeholder:text-muted-foreground/50" placeholder="Search applications..." />
+                        <input
+                          value={agencySearchQuery}
+                          onChange={(e) => setAgencySearchQuery(e.target.value)}
+                          className="pl-11 pr-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-sm focus:ring-2 focus:ring-primary/20 transition-all w-full md:w-64 placeholder:text-muted-foreground/50"
+                          placeholder="Search by name, email, or contact..."
+                        />
                       </div>
                     </div>
 
-                    {agencies.length === 0 ? (
-                      <div className="text-center py-24 bg-white/5 rounded-[3rem] border-2 border-dashed border-white/10">
-                        <CheckCircle2 className="w-16 h-16 mx-auto mb-6 text-primary/30" />
-                        <p className="text-muted-foreground text-lg font-light italic">The backlog is clear. No agencies awaiting review.</p>
-                      </div>
-                    ) : (
-                      <div className="grid gap-6">
-                        {agencies.map((agency) => (
-                          <div key={agency.id} className="group relative overflow-hidden rounded-[2.5rem] p-8 bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-500 hover:shadow-2xl">
-                            <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                              <div className="flex items-center gap-6">
-                                <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform">
-                                  <Users className="w-8 h-8 text-primary" />
-                                </div>
-                                <div>
-                                  <h3 className="font-black text-2xl tracking-tight leading-none mb-3">{agency.name || agency.email}</h3>
-                                  <div className="flex flex-wrap gap-4 items-center">
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                      <Activity className="w-4 h-4 text-primary" />
-                                      {agency.email}
-                                    </div>
-                                    <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-2">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                                      {agency.contact_no}
-                                    </div>
+                    {(() => {
+                      const filteredAgencies = agencies.filter(agency =>
+                        agency.name?.toLowerCase().includes(agencySearchQuery.toLowerCase()) ||
+                        agency.email?.toLowerCase().includes(agencySearchQuery.toLowerCase()) ||
+                        agency.contact_no?.includes(agencySearchQuery) ||
+                        agency.whatsapp?.includes(agencySearchQuery)
+                      );
+
+                      return filteredAgencies.length === 0 ? (
+                        <div className="text-center py-24 bg-white/5 rounded-[3rem] border-2 border-dashed border-white/10">
+                          {agencySearchQuery ? (
+                            <>
+                              <Search className="w-16 h-16 mx-auto mb-6 text-primary/30" />
+                              <p className="text-muted-foreground text-lg font-light italic">No agencies match your search criteria.</p>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-16 h-16 mx-auto mb-6 text-primary/30" />
+                              <p className="text-muted-foreground text-lg font-light italic">The backlog is clear. No agencies awaiting review.</p>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="grid gap-6">
+                          {filteredAgencies.map((agency) => (
+                            <div key={agency.id} className="group relative overflow-hidden rounded-[2.5rem] p-8 bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-500 hover:shadow-2xl">
+                              <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                              {/* Header with Logo */}
+                              <div className="flex items-start gap-6 mb-6">
+                                {agency.logo_url ? (
+                                  <div className="w-20 h-20 rounded-2xl bg-white p-2 border border-white/20 shadow-lg shrink-0 overflow-hidden">
+                                    <Image
+                                      src={agency.logo_url}
+                                      alt="Logo"
+                                      width={80}
+                                      height={80}
+                                      className="w-full h-full object-contain"
+                                    />
                                   </div>
+                                ) : (
+                                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+                                    <span className="text-3xl font-black text-primary">{agency.name?.[0] || 'A'}</span>
+                                  </div>
+                                )}
+
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="font-black text-2xl tracking-tight leading-none mb-2">{agency.name || agency.email}</h3>
+                                  {agency.address && (
+                                    <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                      <span className="line-clamp-1">{agency.address}</span>
+                                    </p>
+                                  )}
                                 </div>
                               </div>
+
+                              {/* Divider */}
+                              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+
+                              {/* Contact Grid */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div className="flex items-start gap-3">
+                                  <Mail className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Email</p>
+                                    <p className="text-sm font-medium truncate">{agency.email}</p>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-start gap-3">
+                                  <Phone className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Phone</p>
+                                    <p className="text-sm font-medium">{agency.contact_no || 'Not provided'}</p>
+                                  </div>
+                                </div>
+
+                                {agency.whatsapp && (
+                                  <div className="flex items-start gap-3">
+                                    <MessageCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">WhatsApp</p>
+                                      <p className="text-sm font-medium">{agency.whatsapp}</p>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {agency.website && (
+                                  <div className="flex items-start gap-3">
+                                    <Globe className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Website</p>
+                                      <a
+                                        href={agency.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm font-medium text-blue-500 hover:underline truncate block"
+                                      >
+                                        {agency.website.replace(/^https?:\/\//, '')}
+                                      </a>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Divider */}
+                              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+
+                              {/* Meta Info */}
+                              {agency.uid && (
+                                <div className="mb-6">
+                                  <p className="text-xs font-mono text-muted-foreground/40">
+                                    ID: {agency.uid.slice(0, 16)}...
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Actions */}
                               <div className="flex gap-4">
-                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveAgency(agency.id)} isLoading={isLoading}>
+                                <Button
+                                  size="lg"
+                                  className="flex-1 rounded-2xl h-14 font-black shadow-xl"
+                                  onClick={() => approveAgency(agency.id)}
+                                  isLoading={loadingStates[`approve-agency-${agency.id}`]}
+                                >
                                   <CheckCircle2 className="mr-2 w-5 h-5" />
                                   Authorize
                                 </Button>
-                                <Button variant="ghost" size="lg" className="rounded-2xl h-14 px-10 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={() => denyAgency(agency.id)} isLoading={isLoading}>
+                                <Button
+                                  variant="ghost"
+                                  size="lg"
+                                  className="flex-1 rounded-2xl h-14 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors"
+                                  onClick={() => denyAgency(agency.id)}
+                                  isLoading={loadingStates[`deny-agency-${agency.id}`]}
+                                >
                                   <XCircle className="mr-2 w-5 h-5" />
                                   Dismiss
                                 </Button>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </Card>
                 </motion.div>
               )}
@@ -677,10 +1011,10 @@ export default function AdminPage() {
                                 </div>
                               </div>
                               <div className="flex gap-4">
-                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveRequest(request.id, request.route_id, request.agency_uid)} isLoading={isLoading}>
+                                <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveRequest(request.id, request.route_id, request.agency_uid)} isLoading={loadingStates[`approve-request-${request.id}`]}>
                                   Grant Access
                                 </Button>
-                                <Button variant="ghost" size="lg" className="rounded-2xl h-14 px-10 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={() => denyRequest(request.id)} isLoading={isLoading}>
+                                <Button variant="ghost" size="lg" className="rounded-2xl h-14 px-10 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors" onClick={() => denyRequest(request.id)} isLoading={loadingStates[`deny-request-${request.id}`]}>
                                   Revoke
                                 </Button>
                               </div>
@@ -703,39 +1037,90 @@ export default function AdminPage() {
                 >
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
                     <div>
-                      <h2 className="text-4xl font-black tracking-tight mb-1">Route Archive</h2>
+                      <h2 className="text-4xl font-black tracking-tight mb-1">Route Library</h2>
                       <p className="text-sm text-muted-foreground font-medium">Manage and provision the system journey catalog</p>
                     </div>
-                    <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => setShowRouteModal(true)}>
+                    <Button size="lg" className="rounded-2xl h-16 px-10 text-base font-bold shadow-2xl" onClick={() => {
+                      setEditingRouteId(null);
+                      setRouteForm({
+                        title: "",
+                        subtitle: "",
+                        path_slug: "",
+                        asset_folder: "dummy",
+                        total_frames: 1,
+                        distance_km: 0,
+                        duration_hours: 0,
+                        hero_image: "",
+                        status: "inactive"
+                      });
+                      setShowRouteModal(true);
+                    }}>
                       <Plus className="mr-2 w-6 h-6" />
-                      Add New Manifest
+                      Create New Route
                     </Button>
                   </div>
 
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {allRoutes.map((route) => (
-                      <Card key={route.id} className="rounded-[2.5rem] border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl p-8 hover:shadow-2xl transition-all duration-500 group relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
-                        <h3 className="font-black text-xl mb-6 group-hover:text-primary transition-colors tracking-tight uppercase">{route.title}</h3>
-                        <div className="space-y-4 mb-10">
-                          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-                            <span>Distance</span>
-                            <span className="text-foreground opacity-100">{route.distance_km} km</span>
+                    {allRoutes.map((route) => {
+                      const isValid = availableFolders.includes(route.path_slug);
+                      const isActive = route.status === "active";
+                      return (
+                        <Card key={route.id} className={`rounded-[2.5rem] border ${isValid ? 'border-white/10' : 'border-red-500/50'} bg-white/20 dark:bg-black/40 backdrop-blur-3xl p-8 hover:shadow-2xl transition-all duration-500 group relative overflow-hidden`}>
+                          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
+                          <div className="absolute top-4 right-4 z-10 flex gap-2">
+                            {!isValid && (
+                              <Badge className="bg-red-500/20 text-red-500 hover:bg-red-500/30 border-none font-bold shadow-lg backdrop-blur-md">Invalid Folder</Badge>
+                            )}
+                            <Badge className={`${isActive
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                              : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                              } border font-bold shadow-lg backdrop-blur-md`}>
+                              {isActive ? '● Active' : '○ Inactive'}
+                            </Badge>
                           </div>
-                          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-                            <span>Duration</span>
-                            <span className="text-foreground opacity-100">{route.duration_hours} hrs</span>
+                          <h3 className="font-black text-xl mb-6 group-hover:text-primary transition-colors tracking-tight uppercase">{route.title}</h3>
+                          <div className="space-y-4 mb-10">
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                              <span>Distance</span>
+                              <span className="text-foreground opacity-100">{route.distance_km} km</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                              <span>Duration</span>
+                              <span className="text-foreground opacity-100">{route.duration_hours} hrs</span>
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                              <span>Sponsors</span>
+                              <Badge className="bg-primary/20 text-primary border-none font-black text-[10px]">{route.sponsor_count || 0} Partners</Badge>
+                            </div>
                           </div>
-                          <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-                            <span>Sponsors</span>
-                            <Badge className="bg-primary/20 text-primary border-none font-black text-[10px]">{route.sponsor_count || 0} Partners</Badge>
+                          <div className="flex gap-2">
+                            <Button
+                              variant={isActive ? "destructive" : "default"}
+                              className={`flex-1 h-12 rounded-xl font-bold ${isActive ? '' : 'bg-green-600 hover:bg-green-700'}`}
+                              onClick={() => toggleRouteStatus(route.id, route.status || "inactive")}
+                              isLoading={loadingStates[`toggle-route-${route.id}`]}
+                            >
+                              {isActive ? 'Deactivate' : 'Activate'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="h-12 w-12 rounded-xl border-white/10 hover:bg-primary hover:text-white hover:border-primary transition-all font-bold"
+                              onClick={() => openEditModal(route)}
+                            >
+                              <Settings className="w-5 h-5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="h-12 w-12 rounded-xl border border-red-500/30 text-red-500 hover:bg-destructive hover:text-white hover:border-destructive transition-all"
+                              onClick={() => deleteRoute(route.id)}
+                              isLoading={loadingStates[`delete-route-${route.id}`]}
+                            >
+                              <XCircle className="w-5 h-5" />
+                            </Button>
                           </div>
-                        </div>
-                        <Button variant="outline" className="w-full h-12 rounded-xl border-white/10 hover:bg-primary hover:text-white hover:border-primary transition-all font-bold">
-                          Configure Details
-                        </Button>
-                      </Card>
-                    ))}
+                        </Card>
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}
@@ -767,7 +1152,7 @@ export default function AdminPage() {
                   <div className="w-16 h-16 rounded-3xl bg-primary/10 flex items-center justify-center text-primary">
                     <MapIcon className="w-8 h-8" />
                   </div>
-                  <h2 className="text-4xl font-black tracking-tight">Provision Journey</h2>
+                  <h2 className="text-4xl font-black tracking-tight">{editingRouteId ? 'Edit Manifest' : 'Provision Journey'}</h2>
                 </div>
 
                 <div className="space-y-8">
@@ -781,15 +1166,40 @@ export default function AdminPage() {
                         placeholder="e.g. Silk Road Heritage"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 opacity-60">System Slug</label>
-                      <Input
-                        value={routeForm.path_slug}
-                        onChange={(e) => setRouteForm({ ...routeForm, path_slug: e.target.value })}
-                        className="bg-white/5 border-white/10 rounded-2xl h-14 focus:bg-white/10 transition-all font-mono"
-                        placeholder="silk-road-heritage"
-                      />
-                    </div>
+                    {editingRouteId ? (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 opacity-60">System Slug (Locked)</label>
+                        <Input
+                          value={routeForm.path_slug}
+                          disabled
+                          className="bg-white/5 border-white/10 rounded-2xl h-14 focus:bg-white/10 transition-all font-mono opacity-50 cursor-not-allowed"
+                        />
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 opacity-60">Route Folder (Slug)</label>
+                        <select
+                          value={routeForm.path_slug}
+                          onChange={(e) => {
+                            const slug = e.target.value;
+                            setRouteForm({
+                              ...routeForm,
+                              path_slug: slug,
+                              asset_folder: slug
+                            });
+                          }}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 focus:bg-white/10 transition-all font-mono appearance-none"
+                        >
+                          <option value="" className="bg-zinc-900">Select Folder...</option>
+                          {availableFolders.map(folder => (
+                            <option key={folder} value={folder} className="bg-zinc-900">{folder}</option>
+                          ))}
+                        </select>
+                        <div className="text-xs text-muted-foreground ml-1">
+                          Select a folder from <code>public/routes</code>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -809,7 +1219,9 @@ export default function AdminPage() {
                         value={routeForm.asset_folder}
                         onChange={(e) => setRouteForm({ ...routeForm, asset_folder: e.target.value })}
                         className="bg-white/5 border-white/10 rounded-2xl h-14 focus:bg-white/10 transition-all font-mono"
+                        placeholder="e.g. siliguri-darjeeling"
                       />
+                      <p className="text-xs text-muted-foreground ml-1">Folder name in <code className="bg-white/10 px-1.5 py-0.5 rounded">public/routes/</code></p>
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 opacity-60">Frame Count</label>
@@ -857,10 +1269,10 @@ export default function AdminPage() {
                     <Button
                       size="lg"
                       className="flex-1 h-16 rounded-2xl text-lg font-black shadow-2xl"
-                      onClick={createRoute}
-                      isLoading={isLoading}
+                      onClick={handleRouteSubmit}
+                      isLoading={loadingStates['route-submit']}
                     >
-                      Initialize Journey
+                      {editingRouteId ? 'Update Manifest' : 'Initialize Journey'}
                     </Button>
                     <Button
                       variant="ghost"

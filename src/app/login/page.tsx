@@ -3,7 +3,7 @@
 import { AgencyAuth } from "@/components/AgencyAuth";
 import Image from "next/image";
 import Link from "next/link";
-import { Mountain, ArrowLeft, ShieldCheck, Star, Users } from "lucide-react";
+import { Mountain, ArrowLeft, ShieldCheck, Sparkles, Phone, MapPin } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { getAssetPath } from "@/lib/utils";
 import { useRef } from "react";
@@ -44,27 +44,42 @@ export default function LoginPage() {
               <Mountain className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-5xl font-bold text-white mb-4 leading-tight">
-              Empowering Himalayan <br /> Travel Agencies
+              Empowering Himalayan <br /> Travel Partners
             </h2>
             <p className="text-xl text-white/80 font-light max-w-md">
               Join the elite circle of certified partners showcasing the soul of the mountains.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 pt-8 border-t border-white/20">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-accent font-bold text-2xl">
-                <Users className="w-5 h-5" />
-                <span>500+</span>
+          <div className="space-y-6 mt-12 border-t border-white/20 pt-8">
+            <div className="flex gap-4">
+              <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                <Sparkles className="h-6 w-6 text-accent" />
               </div>
-              <p className="text-sm text-white/60 uppercase tracking-widest font-semibold">Active Agencies</p>
+              <div>
+                <h3 className="text-white font-bold text-lg">7-Day Free Beta Access</h3>
+                <p className="text-sm text-white/60 leading-relaxed">Early access to premium route sponsorship features with zero commitment.</p>
+              </div>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-accent font-bold text-2xl">
-                <Star className="w-5 h-5" />
-                <span>4.9/5</span>
+
+            <div className="flex gap-4">
+              <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                <Phone className="h-6 w-6 text-accent" />
               </div>
-              <p className="text-sm text-white/60 uppercase tracking-widest font-semibold">Partner Rating</p>
+              <div>
+                <h3 className="text-white font-bold text-lg">Direct Traveler Connections</h3>
+                <p className="text-sm text-white/60 leading-relaxed">Your agency contact details displayed directly on popular routes.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="h-12 w-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                <MapPin className="h-6 w-6 text-accent" />
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-lg">Exclusive Route Ownership</h3>
+                <p className="text-sm text-white/60 leading-relaxed">Connect your brand with iconic Himalayan journeys.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -79,9 +94,9 @@ export default function LoginPage() {
           </Link>
 
           <div className="mb-10">
-            <h1 className="text-4xl font-bold mb-3 tracking-tight">Welcome Back</h1>
+            <h1 className="text-4xl font-bold mb-3 tracking-tight">Partner Access</h1>
             <p className="text-muted-foreground text-lg font-light">
-              Access your exclusive agency dashboard to manage journeys and travelers.
+              Enter your business email to manage your journeys and leads.
             </p>
           </div>
 
@@ -89,13 +104,6 @@ export default function LoginPage() {
             <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary/5 rounded-full blur-2xl" />
             <AgencyAuth mode="login" />
           </div>
-
-          <p className="mt-10 text-center text-muted-foreground">
-            New to PathSathi?{" "}
-            <Link href="/signup" className="text-primary font-bold hover:underline transition-all">
-              Start Your Free Beta →
-            </Link>
-          </p>
 
           <div className="mt-16 flex items-center justify-center gap-3 text-xs text-muted-foreground font-semibold uppercase tracking-[0.2em]">
             <ShieldCheck className="w-4 h-4 text-primary" />

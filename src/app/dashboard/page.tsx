@@ -16,7 +16,6 @@ import {
   where
 } from "firebase/firestore";
 import { getFirebaseAuth, getFirestoreDb } from "@/lib/firebase";
-import { routes as mockRoutes } from "@/lib/mock-data";
 import { getAssetPath } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -44,7 +43,8 @@ const emptyProfile = {
   contact_no: "",
   whatsapp: "",
   address: "",
-  website: ""
+  website: "",
+  logo_url: ""
 };
 
 type AgencyDoc = {
@@ -55,6 +55,7 @@ type AgencyDoc = {
   whatsapp?: string;
   address: string;
   website?: string;
+  logo_url?: string;
   is_verified: boolean;
   status: string;
   trial_start?: any;
@@ -136,7 +137,8 @@ export default function DashboardPage() {
         contact_no: data.contact_no || "",
         whatsapp: data.whatsapp || "",
         address: data.address || "",
-        website: data.website || ""
+        website: data.website || "",
+        logo_url: data.logo_url || ""
       });
     }
   };
@@ -144,33 +146,20 @@ export default function DashboardPage() {
   const loadRoutes = async () => {
     const firestore = getFirestoreDb();
     if (!firestore) {
-      setRoutes(
-        mockRoutes.map((route) => ({
-          id: route.id,
-          title: route.title,
-          subtitle: route.subtitle,
-          path_slug: route.slug
-        }))
-      );
+      console.error("Firebase not configured");
       return;
     }
-    const snapshot = await getDocs(collection(firestore, "routes"));
-    if (snapshot.empty) {
-      setRoutes(
-        mockRoutes.map((route) => ({
-          id: route.id,
-          title: route.title,
-          subtitle: route.subtitle,
-          path_slug: route.slug
-        }))
-      );
-      return;
+
+    try {
+      const snapshot = await getDocs(collection(firestore, "routes"));
+      const docs = snapshot.docs.map((docItem) => {
+        const data = docItem.data() as Omit<RouteDoc, "id">;
+        return { id: docItem.id, ...data };
+      });
+      setRoutes(docs);
+    } catch (error) {
+      console.error("Error loading routes:", error);
     }
-    const docs = snapshot.docs.map((docItem) => {
-      const data = docItem.data() as Omit<RouteDoc, "id">;
-      return { id: docItem.id, ...data };
-    });
-    setRoutes(docs);
   };
 
   const loadPurchases = async (uid: string) => {
@@ -209,6 +198,7 @@ export default function DashboardPage() {
         whatsapp: profile.whatsapp,
         address: profile.address,
         website: profile.website,
+        logo_url: profile.logo_url,
         updated_at: serverTimestamp()
       };
 
@@ -507,6 +497,36 @@ export default function DashboardPage() {
                         onChange={(e) => setProfile({ ...profile, address: e.target.value })}
                         className="bg-background/20 rounded-2xl h-14"
                       />
+
+                      <div className="grid md:grid-cols-2 gap-8 items-start">
+                        <div className="space-y-2">
+                          <Input
+                            label="Logo URL"
+                            value={profile.logo_url}
+                            onChange={(e) => setProfile({ ...profile, logo_url: e.target.value })}
+                            className="bg-background/20 rounded-2xl h-14"
+                            placeholder="https://example.com/logo.png"
+                          />
+                          <p className="text-xs text-muted-foreground ml-1">Enter a direct URL to your agency logo (PNG, JPG, or WebP)</p>
+                        </div>
+                        {profile.logo_url && (
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-20 h-20 rounded-2xl border border-border/50 overflow-hidden bg-background/20">
+                              <Image
+                                src={profile.logo_url}
+                                alt="Agency Logo Preview"
+                                width={80}
+                                height={80}
+                                className="object-contain w-full h-full"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium">Logo Preview</span>
+                          </div>
+                        )}
+                      </div>
 
                       <div className="pt-8 flex justify-end">
                         <Button

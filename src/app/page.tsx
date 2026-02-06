@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowRight, MapPin, Clock, Users } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
-import routes from '@/data/routes/routes.json'
+import { getActiveRoutes } from '@/lib/services/routes'
+import type { Route } from '@/lib/types'
 import { ScrollingGallery } from '@/components/ui/ScrollingGallery'
 import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
@@ -16,6 +17,31 @@ export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null)
   const featuresRef = useRef<HTMLDivElement>(null)
   const routesRef = useRef<HTMLElement>(null)
+  const [routes, setRoutes] = useState<Route[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Only show routes that have asset folders in public/routes/
+  // Add new route slugs here when you add their assets
+  const VALID_ROUTE_SLUGS = ['siliguri-kurseong-darjeeling'];
+
+  // Fetch active routes from Firebase
+  useEffect(() => {
+    const fetchRoutes = async () => {
+      try {
+        const activeRoutes = await getActiveRoutes()
+        // Filter to only routes that have assets
+        const validRoutes = activeRoutes.filter(
+          route => VALID_ROUTE_SLUGS.includes(route.path_slug)
+        )
+        setRoutes(validRoutes)
+      } catch (error) {
+        console.error('Error fetching routes:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchRoutes()
+  }, [])
 
   useGSAP(() => {
     // ── Hero animations ──
@@ -42,18 +68,18 @@ export default function Home() {
         duration: 0.8,
         ease: 'power4.out',
       }, 0.3)
-        .from('.hero-subtitle', {
-          y: 40,
-          opacity: 0,
-          duration: 0.8,
-          ease: 'power3.out'
-        }, '-=0.4')
-        .from('.hero-cta', {
-          y: 30,
-          opacity: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-        }, '-=0.3')
+        // .from('.hero-subtitle', {
+        //   y: 40,
+        //   opacity: 0,
+        //   duration: 0.8,
+        //   ease: 'power3.out'
+        // }, '-=0.4')
+        // .from('.hero-cta', {   <-- Temporarily removed to fix visibility
+        //   y: 30,
+        //   opacity: 0,
+        //   duration: 0.7,
+        //   ease: 'power3.out',
+        // }, '-=0.3')
         .from('.hero-scroll-indicator', {
           opacity: 0,
           duration: 1,
@@ -275,58 +301,82 @@ export default function Home() {
 
           {/* Asymmetric grid */}
           <div className="grid md:grid-cols-2 gap-6">
-            {routes.map((route, i) => {
-              const isLarge = i === 0
-              return (
-                <Link
-                  key={route.id}
-                  href={`/routes/${route.slug}`}
-                  className={`route-card group block ${isLarge ? 'md:col-span-2' : ''}`}
-                >
-                  <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[500px]' : 'h-[400px]'}`}>
-                    {/* Image */}
-                    <Image
-                      src={getAssetPath("/images/mountain_road_journey_1770289426463.png")}
-                      alt={route.title}
-                      fill
-                      className="route-image object-cover transition-transform duration-700"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            {isLoading ? (
+              // Loading skeleton
+              <>
+                <div className="md:col-span-2 h-[500px] rounded-2xl bg-card animate-pulse" />
+                <div className="h-[400px] rounded-2xl bg-card animate-pulse" />
+                <div className="h-[400px] rounded-2xl bg-card animate-pulse" />
+              </>
+            ) : routes.length === 0 ? (
+              <div className="md:col-span-2 text-center py-16 text-muted-foreground">
+                <p className="text-lg">No routes available yet. Check back soon!</p>
+              </div>
+            ) : (
+              routes.map((route, i) => {
+                const isLarge = i === 0
+                return (
+                  <Link
+                    key={route.id}
+                    href={`/routes/${route.path_slug}`}
+                    className={`route-card group block ${isLarge ? 'md:col-span-2' : ''}`}
+                  >
+                    <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[500px]' : 'h-[400px]'}`}>
+                      {/* Image */}
+                      <Image
+                        src={getAssetPath(route.hero_image || "/images/mountain_road_journey_1770289426463.png")}
+                        alt={route.title}
+                        fill
+                        className="route-image object-cover transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
-                    {/* Content overlay at bottom */}
-                    <div className="route-content absolute inset-x-0 bottom-0 p-8 transition-transform duration-500">
-                      <h3 className="font-display text-3xl sm:text-4xl text-white mb-3 leading-tight">
-                        {route.title}
-                      </h3>
-                      <p className="text-white/70 mb-5 max-w-lg">
-                        {route.subtitle}
-                      </p>
+                      {/* Content overlay at bottom */}
+                      <div className="route-content absolute inset-x-0 bottom-0 p-8 transition-transform duration-500">
+                        <h3 className="font-display text-3xl sm:text-4xl text-white mb-3 leading-tight">
+                          {route.title}
+                        </h3>
+                        <p className="text-white/70 mb-5 max-w-lg">
+                          {route.subtitle}
+                        </p>
 
-                      <div className="flex items-center gap-6 text-sm text-white/60">
-                        <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span>{route.distanceKm} km</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{route.durationHours} hrs</span>
-                        </div>
-                        {(route.sponsorCount ?? 0) > 0 && (
-                          <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                            <Users className="w-3.5 h-3.5" />
-                            <span>{route.sponsorCount} {route.sponsorCount === 1 ? 'agency' : 'agencies'}</span>
+                        <div className="flex flex-col gap-4">
+                          {/* Stats Row */}
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/60 font-medium">
+                            {route.distance_km && (
+                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
+                                <MapPin className="w-3.5 h-3.5 text-white/40" />
+                                <span>{route.distance_km} km</span>
+                              </div>
+                            )}
+                            {route.duration_hours && (
+                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
+                                <Clock className="w-3.5 h-3.5 text-white/40" />
+                                <span>{route.duration_hours} hrs</span>
+                              </div>
+                            )}
+                            {(route.sponsor_count ?? 0) > 0 && (
+                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
+                                <Users className="w-3.5 h-3.5 text-white/40" />
+                                <span>{route.sponsor_count} {route.sponsor_count === 1 ? 'partner' : 'partners'}</span>
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div className="ml-auto flex items-center gap-2 text-white/80 group-hover:text-white group-hover:gap-3 transition-all">
-                          <span className="tracking-[0.1em] uppercase">Explore</span>
-                          <ArrowRight className="w-4 h-4" />
+
+                          {/* Action Row */}
+                          <div className="flex items-center justify-end border-t border-white/10 pt-4 mt-2">
+                            <div className="flex items-center gap-2 text-white group-hover:gap-3 transition-all">
+                              <span className="tracking-[0.15em] uppercase text-sm font-semibold">Explore</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
-              )
-            })}
+                  </Link>
+                )
+              })
+            )}
           </div>
         </Container>
       </section>

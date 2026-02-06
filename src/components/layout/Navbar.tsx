@@ -12,6 +12,12 @@ export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navRef = useRef<HTMLElement>(null);
 
+    const pathname = usePathname();
+    const isRoutePage = pathname?.startsWith("/routes/");
+    // Check for exact match or trailing slash
+    const isAuthPage = pathname === "/login" || pathname === "/login/" || pathname === "/signup" || pathname === "/signup/";
+    const shouldHideNavbar = isRoutePage || isAuthPage;
+
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);
         window.addEventListener("scroll", handleScroll);
@@ -19,6 +25,7 @@ export function Navbar() {
     }, []);
 
     useGSAP(() => {
+        if (!navRef.current || shouldHideNavbar) return;
         gsap.from(navRef.current, {
             y: -30,
             opacity: 0,
@@ -26,7 +33,7 @@ export function Navbar() {
             ease: "power3.out",
             clearProps: "all",
         });
-    }, { scope: navRef });
+    }, { scope: navRef, dependencies: [shouldHideNavbar] });
 
     const navLinks = [
         { href: "/#routes", label: "Routes" },
@@ -34,27 +41,23 @@ export function Navbar() {
         { href: "/login", label: "For Agencies" },
     ];
 
-    const pathname = usePathname();
-    const isRoutePage = pathname?.startsWith("/routes/");
-    if (isRoutePage) return null;
+    if (shouldHideNavbar) return null;
 
     return (
         <nav
             ref={navRef}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-                isScrolled
-                    ? "bg-white/95 backdrop-blur-xl border-b border-border/60"
-                    : "bg-transparent"
-            }`}
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
+                ? "bg-white/95 backdrop-blur-xl border-b border-border/60"
+                : "bg-transparent"
+                }`}
         >
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="flex items-center justify-between h-18 py-5">
                     {/* Logo — text-only, Playfair Display */}
                     <Link href="/" className="group">
                         <span
-                            className={`font-display text-2xl tracking-tight transition-colors duration-300 ${
-                                isScrolled ? "text-foreground" : "text-white"
-                            }`}
+                            className={`font-display text-2xl tracking-tight transition-colors duration-300 ${isScrolled ? "text-foreground" : "text-white"
+                                }`}
                         >
                             PathSathi
                         </span>
@@ -66,17 +69,15 @@ export function Navbar() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`relative text-sm tracking-[0.05em] font-medium transition-all duration-300 ${
-                                    isScrolled
-                                        ? "text-foreground/70 hover:text-foreground"
-                                        : "text-white/80 hover:text-white"
-                                } group`}
+                                className={`relative text-sm tracking-[0.05em] font-medium transition-all duration-300 ${isScrolled
+                                    ? "text-foreground/70 hover:text-foreground"
+                                    : "text-white/80 hover:text-white"
+                                    } group`}
                             >
                                 {link.label}
                                 <span
-                                    className={`absolute -bottom-0.5 left-0 w-0 h-px transition-all duration-300 group-hover:w-full ${
-                                        isScrolled ? "bg-foreground" : "bg-white"
-                                    }`}
+                                    className={`absolute -bottom-0.5 left-0 w-0 h-px transition-all duration-300 group-hover:w-full ${isScrolled ? "bg-foreground" : "bg-white"
+                                        }`}
                                 />
                             </Link>
                         ))}
@@ -86,11 +87,10 @@ export function Navbar() {
                     <div className="hidden md:block">
                         <Link
                             href="#routes"
-                            className={`text-sm tracking-[0.05em] font-medium transition-colors duration-300 ${
-                                isScrolled
-                                    ? "text-accent hover:text-accent/80"
-                                    : "text-white/90 hover:text-white"
-                            }`}
+                            className={`text-sm tracking-[0.05em] font-medium transition-colors duration-300 ${isScrolled
+                                ? "text-accent hover:text-accent/80"
+                                : "text-white/90 hover:text-white"
+                                }`}
                         >
                             Plan a Journey
                         </Link>
@@ -98,11 +98,10 @@ export function Navbar() {
 
                     {/* Mobile Menu Button */}
                     <button
-                        className={`md:hidden p-2 rounded-lg transition-all ${
-                            isScrolled
-                                ? "text-foreground hover:bg-muted"
-                                : "text-white hover:bg-white/10"
-                        }`}
+                        className={`md:hidden p-2 rounded-lg transition-all ${isScrolled
+                            ? "text-foreground hover:bg-muted"
+                            : "text-white hover:bg-white/10"
+                            }`}
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         aria-label="Toggle menu"
                     >

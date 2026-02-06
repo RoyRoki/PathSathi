@@ -75,7 +75,7 @@ export default function SignupPage() {
           <div className="mb-10">
             <h1 className="text-4xl font-bold mb-3 tracking-tight">Partner Program</h1>
             <p className="text-muted-foreground text-lg font-light">
-              Elevate your agency's presence with our unique scrollytelling platform.
+              Elevate your business presence with our unique scrollytelling platform.
             </p>
           </div>
 
@@ -83,12 +83,7 @@ export default function SignupPage() {
             <AgencyAuth mode="signup" />
           </div>
 
-          <p className="mt-10 text-center text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/login" className="text-primary font-bold hover:underline transition-all">
-              Agency Login →
-            </Link>
-          </p>
+
 
           <div className="mt-16 flex items-center justify-center gap-3 text-xs text-muted-foreground font-semibold uppercase tracking-[0.2em]">
             <Award className="w-4 h-4 text-accent" />

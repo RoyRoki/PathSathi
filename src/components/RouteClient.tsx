@@ -14,7 +14,6 @@ import { getFirestoreDb } from "@/lib/firebase";
 import { JourneyPlayer } from "@/components/JourneyPlayer";
 import { AgencySelector } from "@/components/AgencySelector";
 import { AgencySheet } from "@/components/AgencySheet";
-import { routes as mockRoutes } from "@/lib/mock-data";
 import { getAssetPath } from "@/lib/utils";
 import type { Agency } from "@/lib/types";
 import { gsap, useGSAP } from "@/lib/gsap";
@@ -32,9 +31,10 @@ type RouteData = {
   subtitle: string;
   asset_folder: string;
   total_frames: number;
-  heroImage?: string;
-  distanceKm?: number;
-  durationHours?: number;
+  desktop_total_frames?: number;
+  hero_image?: string;
+  distance_km?: number;
+  duration_hours?: number;
 };
 
 type RouteConfig = {
@@ -46,13 +46,24 @@ type RouteClientProps = {
   tid?: string;
 };
 
-export function RouteClient({ slug, tid }: RouteClientProps) {
+export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   const [route, setRoute] = useState<RouteData | null>(null);
   const [agency, setAgency] = useState<Agency | undefined>(undefined);
   const [agencyList, setAgencyList] = useState<Agency[]>([]);
-  const [activeAgencyId, setActiveAgencyId] = useState<string | undefined>(tid);
+  const [activeAgencyId, setActiveAgencyId] = useState<string | undefined>(initialTid);
   const [loading, setLoading] = useState(true);
   const [routeConfig, setRouteConfig] = useState<RouteConfig | null>(null);
+
+  // Read tid from URL client-side (for static export compatibility)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !initialTid) {
+      const params = new URLSearchParams(window.location.search);
+      const tidFromUrl = params.get('tid');
+      if (tidFromUrl) {
+        setActiveAgencyId(tidFromUrl);
+      }
+    }
+  }, [initialTid]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -70,46 +81,28 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
     const loadRoute = async () => {
       const firestore = getFirestoreDb();
       if (!firestore) {
-        const fallback = mockRoutes.find((item) => item.slug === slug);
-        if (fallback) {
-          setRoute({
-            id: fallback.id,
-            title: fallback.title,
-            subtitle: fallback.subtitle,
-            asset_folder: fallback.assetFolder || "dummy",
-            total_frames: fallback.totalFrames || 0,
-            heroImage: fallback.heroImage
-          });
-        }
+        console.error("Firebase not configured");
         setLoading(false);
         return;
       }
-      const routeRef = doc(firestore, "routes", slug);
-      const snapshot = await getDoc(routeRef);
-      if (snapshot.exists()) {
-        const data = snapshot.data() as Omit<RouteData, "id">;
-        const fallback = mockRoutes.find((item) => item.slug === slug);
-        setRoute({
-          id: snapshot.id,
-          ...data,
-          heroImage: data.heroImage || fallback?.heroImage
-        });
-        setLoading(false);
-      } else {
-        const fallback = mockRoutes.find((item) => item.slug === slug);
-        if (fallback) {
+
+      try {
+        const routeRef = doc(firestore, "routes", slug);
+        const snapshot = await getDoc(routeRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data() as Omit<RouteData, "id">;
           setRoute({
-            id: fallback.id,
-            title: fallback.title,
-            subtitle: fallback.subtitle,
-            asset_folder: fallback.assetFolder || "dummy",
-            total_frames: fallback.totalFrames || 0,
-            heroImage: fallback.heroImage
+            id: snapshot.id,
+            ...data
           });
-          setLoading(false);
         } else {
-          setLoading(false);
+          console.error(`Route not found: ${slug}`);
         }
+      } catch (error) {
+        console.error("Error loading route:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -184,21 +177,6 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
         }
       });
     }
-
-    // Floating stats stagger animation
-    gsap.from('.floating-stat-card', {
-      opacity: 0,
-      y: 60,
-      scale: 0.95,
-      duration: 1.2,
-      stagger: 0.15,
-      ease: 'power3.out',
-      scrollTrigger: {
-        trigger: '.floating-stats-container',
-        start: 'top 85%',
-        toggleActions: 'play none none none'
-      }
-    });
   }, [route]);
 
   // Load agencies effect (existing logic)
@@ -261,16 +239,20 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
       const filtered = agencies.filter(Boolean) as Agency[];
       setAgencyList(filtered);
 
-      const preferredId = tid && filtered.find((item) => item.id === tid)?.id;
-      setActiveAgencyId(preferredId);
-      setAgency(filtered.find((item) => item.id === preferredId));
+      // If we have an active agency from URL, select it
+      if (activeAgencyId) {
+        const preferred = filtered.find((item) => item.id === activeAgencyId);
+        if (preferred) {
+          setAgency(preferred);
+        }
+      }
     };
 
     loadAgencies().catch(() => {
       setAgency(undefined);
       setAgencyList([]);
     });
-  }, [route, tid]);
+  }, [route, activeAgencyId]);
 
   useEffect(() => {
     if (!activeAgencyId) {
@@ -309,20 +291,19 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
       <section ref={headerRef} className="relative h-[80vh] lg:h-[100vh] w-full bg-slate-900">
         <div className="absolute inset-0 overflow-hidden">
           <div className="journey-header-bg absolute inset-0">
-            {/* ALWAYS VISIBLE: Image background with overlay */}
-            {route.heroImage && (
-              <Image
-                src={route.heroImage}
-                alt={route.title}
-                fill
-                className="object-cover opacity-90"
-                priority
-                onError={(e) => {
-                  // Hide image if it fails to load
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
-              />
-            )}
+            {/* Hero Image */}
+            {/* Hero Image */}
+            <Image
+              src={getAssetPath(route.hero_image || `/routes/${slug}/meta/hero.webp`)}
+              alt={route.title}
+              fill
+              className="object-cover opacity-90"
+              priority
+              onError={(e) => {
+                console.error('Failed to load hero image:', route.hero_image || `/routes/${slug}/meta/hero.webp`);
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
 
             {/* Light Gradient for text readability - MUCH LIGHTER */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-transparent" />
@@ -344,7 +325,7 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
         </div>
 
         {/* Home Button */}
-        <div className="absolute top-8 left-8 z-20">
+        <div className="absolute top-8 left-8 z-30">
           <Link href="/" className="group flex items-center justify-center text-white/80 hover:text-white transition-all duration-500">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 transition-all duration-500 group-hover:bg-white/20 group-hover:border-white/40 group-hover:shadow-lg group-hover:shadow-accent/20 group-hover:scale-105">
               <Home className="h-5 w-5 transition-transform duration-500 group-hover:scale-110" />
@@ -393,7 +374,8 @@ export function RouteClient({ slug, tid }: RouteClientProps) {
         }>
           <JourneyPlayer
             assetFolder={route.asset_folder}
-            totalFrames={route.total_frames}
+            mobileFrames={route.total_frames || 1828}
+            desktopFrames={route.desktop_total_frames || route.total_frames || 1920}
             pointsOfInterest={routeConfig?.pointsOfInterest}
           />
         </ErrorBoundary>

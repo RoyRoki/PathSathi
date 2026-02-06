@@ -44,8 +44,8 @@ export const routes: RouteInfo[] = [
     subtitle: "Himalayan Mountain Adventure",
     distanceKm: 78,
     durationHours: 3,
-    heroImage: getAssetPath("/routes/siliguri-Kurseong-darjeeling/meta/hero.webp"),
-    assetFolder: "routes/siliguri-Kurseong-darjeeling",
+    heroImage: getAssetPath("/routes/siliguri-kurseong-darjeeling/meta/hero.webp"),
+    assetFolder: "routes/siliguri-kurseong-darjeeling",
     totalFrames: 247,
     agencies: []
   }

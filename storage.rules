@@ -1,0 +1,28 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Admin helper
+    function isAdmin() {
+      return request.auth != null && (request.auth.token.admin == true || request.auth.token.email == 'admin@gmail.com');
+    }
+
+    // Public assets (routes, static) - Read-only for public, Write for Admin
+    match /routes/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Agency assets
+    match /agencies/{agencyId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || (request.auth != null && request.auth.uid == agencyId);
+    }
+
+    // Default deny
+    match /{allPaths=**} {
+      allow read: if true; // Temporary: allow public read for ease
+      allow write: if isAdmin();
+    }
+  }
+}

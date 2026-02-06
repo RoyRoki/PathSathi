@@ -26,6 +26,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         const [isFocused, setIsFocused] = useState(false);
         const [showPassword, setShowPassword] = useState(false);
         const hasValue = props.value !== undefined && props.value !== "";
+        const hasPlaceholder = props.placeholder !== undefined && props.placeholder !== "";
+        const shouldFloat = isFocused || hasValue || hasPlaceholder;
 
         const isPasswordType = type === "password";
         const inputType = isPasswordType && showPassword ? "text" : type;
@@ -69,16 +71,16 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                 absolute left-4 pointer-events-none origin-left
                 transition-all duration-200
                 ${leftIcon ? "left-11" : "left-4"}
-                ${isFocused || hasValue
+                ${shouldFloat
                                     ? "top-2 text-xs text-muted-foreground"
                                     : "top-1/2 -translate-y-1/2 text-base text-muted-foreground"
                                 }
               `}
                             animate={{
-                                fontSize: isFocused || hasValue ? "0.75rem" : "1rem",
-                                top: isFocused || hasValue ? "0.5rem" : "50%",
+                                fontSize: shouldFloat ? "0.75rem" : "1rem",
+                                top: shouldFloat ? "0.5rem" : "50%",
                                 transform:
-                                    isFocused || hasValue
+                                    shouldFloat
                                         ? "translateY(0)"
                                         : "translateY(-50%)"
                             }}

@@ -13,12 +13,15 @@ type POI = {
 
 type JourneyPlayerProps = {
   assetFolder: string;
-  totalFrames: number;
+  mobileFrames: number;
+  desktopFrames: number;
   pointsOfInterest?: POI[];
 };
 
 export function JourneyPlayer({
   assetFolder,
+  mobileFrames,
+  desktopFrames,
   pointsOfInterest = [],
 }: JourneyPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -30,8 +33,8 @@ export function JourneyPlayer({
   // Get route slug
   const routeSlug = assetFolder?.split("/")[0] || "siliguri-Kurseong-darjeeling";
 
-  // Device-specific frame counts
-  const totalFrames = isMobile ? 1828 : 1920;
+  // Device-specific frame counts from route data
+  const totalFrames = isMobile ? mobileFrames : desktopFrames;
   const devicePath = isMobile ? "mobile" : "desktop";
 
   useEffect(() => {

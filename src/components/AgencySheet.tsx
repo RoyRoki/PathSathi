@@ -63,22 +63,43 @@ export function AgencySheet({ agency, hasAgencies, className }: AgencySheetProps
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16" />
 
         <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                Principal Agency
-              </span>
-              {agency.isVerified && (
-                <Badge variant="outline" className="h-5 px-2 border-primary/30 text-primary bg-primary/5">
-                  <ShieldCheck className="w-3 h-3 mr-1" />
-                  Verified
-                </Badge>
-              )}
+          {/* Logo and Info Section */}
+          <div className="flex items-start gap-4">
+            {/* Agency Logo */}
+            {agency.logo_url ? (
+              <div className="w-16 h-16 rounded-2xl border border-border/50 overflow-hidden bg-background/20 flex-shrink-0">
+                <img
+                  src={agency.logo_url}
+                  alt={`${agency.name} logo`}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-8 h-8 text-primary" />
+              </div>
+            )}
+
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                  Principal Agency
+                </span>
+                {agency.isVerified && (
+                  <Badge variant="outline" className="h-5 px-2 border-primary/30 text-primary bg-primary/5">
+                    <ShieldCheck className="w-3 h-3 mr-1" />
+                    Verified
+                  </Badge>
+                )}
+              </div>
+              <h3 className="text-3xl font-bold mb-2 tracking-tight">{agency.name}</h3>
+              <p className="text-muted-foreground text-sm font-light leading-relaxed max-w-xs italic">
+                {agency.address}
+              </p>
             </div>
-            <h3 className="text-3xl font-bold mb-2 tracking-tight">{agency.name}</h3>
-            <p className="text-muted-foreground text-sm font-light leading-relaxed max-w-xs italic">
-              {agency.address}
-            </p>
           </div>
 
           <div className="flex flex-col gap-3">
