@@ -1,10 +1,11 @@
 /** @type {import('next').NextConfig} */
-const isProd = process.env.NODE_ENV === 'production';
+// Use GITHUB_ACTIONS to detect GitHub Pages deployment
+const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
 
 const nextConfig = {
   output: 'export',
-  basePath: isProd ? '/PathSathi' : '',
-  assetPrefix: isProd ? '/PathSathi' : '',
+  basePath: isGitHubPages ? '/PathSathi' : '',
+  assetPrefix: isGitHubPages ? '/PathSathi/' : '',
   images: {
     unoptimized: true
   },
