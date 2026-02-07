@@ -18,7 +18,7 @@ import { getAssetPath } from "@/lib/utils";
 import type { Agency } from "@/lib/types";
 import { gsap, useGSAP } from "@/lib/gsap";
 // import { initSmoothScroll } from "@/lib/lenis"; // Temporarily disabled
-import { MapPin, Clock, Home } from "lucide-react";
+import { MapPin, Clock, Home, ChevronsDown } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
@@ -327,34 +327,11 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   // 2. Journey assets preloading (if route exists)
   // We show the loading screen if:
   // - Route is still loading (loading = true)
-  // - Route exists BUT journey isn't ready yet (!journeyReady)
-  const showLoading = loading || (route && !journeyReady);
 
-  if (showLoading) {
+
+  if (loading) {
     return (
-      <>
-        <LoadingScreen
-          progress={route ? journeyProgress : undefined}
-          backgroundImage={route?.hero_image ? getAssetPath(route.hero_image) : undefined}
-        />
-        {/* Mount JourneyPlayer early to start preloading, but keep it hidden/interactive-disabled until ready */}
-        {route && (
-          <main className="fixed inset-0 z-0 opacity-0 pointer-events-none">
-            <section className="journey-player-container relative bg-black">
-              <JourneyPlayer
-                assetFolder={route.asset_folder}
-                mobileFrames={routeConfig?.totalFrames || 1828}
-                desktopFrames={routeConfig?.totalFrames || 1920}
-                pointsOfInterest={routeConfig?.pointsOfInterest}
-                isMobile={isMobile}
-                activeConfigSource={configSource}
-                onLoadProgress={setJourneyProgress}
-                onReady={() => setJourneyReady(true)}
-              />
-            </section>
-          </main>
-        )}
-      </>
+      <LoadingScreen />
     );
   }
 
@@ -366,8 +343,18 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     );
   }
 
+  // Check if we need to show the loading overlay
+  const showLoadingOverlay = !journeyReady || journeyProgress < 98;
+
   return (
     <main ref={containerRef} className="relative min-h-screen bg-background">
+      {/* Loading Overlay - Persists while journey initializes without unmounting main content */}
+      {showLoadingOverlay && (
+        <LoadingScreen
+          progress={journeyProgress}
+          backgroundImage={route.hero_image ? getAssetPath(route.hero_image) : undefined}
+        />
+      )}
       {/* Cinematic Header */}
       <section ref={headerRef} className="relative h-[80vh] lg:h-[100vh] w-full bg-slate-900">
         <div className="absolute inset-0 overflow-hidden">
@@ -455,6 +442,12 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
 
         {/* Bottom gradient fade to next section */}
         <div className="absolute bottom-0 left-0 w-full h-32 z-20 pointer-events-none bg-gradient-to-t from-black to-transparent" />
+
+        {/* Scroll indicator - Arrow */}
+        <div className="absolute bottom-12 left-0 w-full flex flex-col items-center justify-center gap-2 z-30 mix-blend-difference animate-bounce pointer-events-none">
+          <span className="text-white/70 text-[10px] tracking-[0.3em] uppercase">Scroll to Explore</span>
+          <ChevronsDown className="w-6 h-6 text-white/80" />
+        </div>
       </section>
 
       {/* Scrollytelling Section */}

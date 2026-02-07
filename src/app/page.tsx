@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Clock, Users } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Users, ChevronsDown } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { getActiveRoutes, getRouteAgencies } from '@/lib/services/routes'
 import type { Route, Agency } from '@/lib/types/domain'
@@ -278,11 +278,10 @@ export default function Home() {
         </div>
 
         {/* Scroll indicator */}
-        <div className="hero-scroll-indicator absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20 mix-blend-difference">
-          <span className="text-white/70 text-[10px] tracking-[0.3em] uppercase">Scroll to Fly</span>
-          <div className="w-[1px] h-16 bg-white/20 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-white animate-scroll-indicator" />
-          </div>
+        {/* Scroll indicator - Arrow */}
+        <div className="hero-scroll-indicator absolute bottom-12 left-0 w-full flex flex-col items-center justify-center gap-2 z-20 mix-blend-difference animate-bounce pointer-events-none">
+          <span className="text-white/70 text-[10px] tracking-[0.3em] uppercase opacity-80">Scroll to Fly</span>
+          <ChevronsDown className="w-6 h-6 text-white/80" />
         </div>
       </section>
 

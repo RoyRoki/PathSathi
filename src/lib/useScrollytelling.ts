@@ -90,14 +90,16 @@ export function useScrollytelling({
     }
 
     // 3. Cleanup far-away frames to manage memory
-    if (imagesRef.current.size > BUFFER_SIZE * 4) { // Only clean if map gets too big
+    // CRITICAL: If preloadAll is true, we assume we want to KEEP all frames in memory for smooth playback.
+    // Disabling GC avoids deleting frames we just spent time loading.
+    if (!preloadAll && imagesRef.current.size > BUFFER_SIZE * 4) { // Only clean if map gets too big AND not preloading all
       for (const [key] of imagesRef.current) {
         if (Math.abs(key - targetFrame) > BUFFER_SIZE * 2) {
           imagesRef.current.delete(key);
         }
       }
     }
-  }, [loadFrame]);
+  }, [loadFrame, preloadAll]);
 
   // Render logic
   const renderFrame = useCallback((frameIndex: number) => {
@@ -172,6 +174,10 @@ export function useScrollytelling({
         for (let i = startIndex; i < endIndex; i++) {
           if (imagesRef.current.has(i)) {
             loadedCount++;
+            const p = Math.round((loadedCount / frameCount) * 100);
+            setLoadProgress(p);
+            onLoadProgress?.(p);
+
             if (loadedCount === frameCount) setReady(true);
             continue;
           }
@@ -245,7 +251,11 @@ export function useScrollytelling({
     });
 
     return () => {
+      if (timeline.scrollTrigger) {
+        timeline.scrollTrigger.kill(true); // Force revert of pinning/spacers
+      }
       timeline.kill();
+      ScrollTrigger.refresh(); // Ensure global scroll positions are recalculated
     };
   }, [frameCount, triggerRef, updateBuffer, renderFrame, start, end, scrub, onFrameChange, onProgress]);
 

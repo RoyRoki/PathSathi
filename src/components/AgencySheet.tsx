@@ -1,7 +1,7 @@
 "use client";
 
 import { Agency } from "@/lib/types";
-import { Phone, Mail, Globe, MessageCircle, ShieldCheck, ArrowUpRight } from "lucide-react";
+import { Phone, Globe, MessageCircle, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { gsap } from "@/lib/gsap";
@@ -19,7 +19,7 @@ type AgencySheetProps = {
   className?: string;
 };
 
-export function AgencySheet({ agency, hasAgencies, className }: AgencySheetProps) {
+export function AgencySheet({ agency, className }: AgencySheetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [imgError, setImgError] = useState(false);
 
