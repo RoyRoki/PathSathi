@@ -120,13 +120,13 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     const loadConfig = async () => {
       const devicePath = isMobile ? "mobile" : "desktop";
       try {
-        const response = await fetch(getAssetPath(`/routes/${slug}/${devicePath}/meta/config.json`));
+        const response = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/${devicePath}/meta/config.json`));
         if (response.ok) {
           const config = await response.json();
           setRouteConfig(config);
         } else {
           // Fallback to legacy path if new path doesn't exist yet
-          const fallbackResponse = await fetch(getAssetPath(`/routes/${slug}/meta/config.json`));
+          const fallbackResponse = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/meta/config.json`));
           if (fallbackResponse.ok) {
             const config = await fallbackResponse.json();
             setRouteConfig(config);

@@ -32,7 +32,7 @@ export function JourneyPlayer({
   const [currentFrame, setCurrentFrame] = useState(1);
   const [activePOI, setActivePOI] = useState<POI | null>(null);
   const [activePOIIndex, setActivePOIIndex] = useState<number>(-1);
-  const routeSlug = assetFolder?.split("/")[0] || "siliguri-Kurseong-darjeeling";
+  const routeSlug = (assetFolder?.split("/")[0] || "siliguri-kurseong-darjeeling").toLowerCase();
 
   // Device-specific frame counts from route data
   const totalFrames = isMobile ? mobileFrames : desktopFrames;
