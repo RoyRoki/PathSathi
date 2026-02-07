@@ -43,7 +43,7 @@ export function FloatingWhatsApp({ phoneNumber, agencyName }: FloatingWhatsAppPr
             </div>
 
             {/* Pulse Effect */}
-            <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-30 animate-pulse duration-[2000ms] -z-10 blur-xl" />
+            <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-30 animate-pulse -z-10 blur-xl" />
         </a>
     );
 }

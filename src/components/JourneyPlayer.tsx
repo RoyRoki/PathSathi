@@ -3,13 +3,6 @@
 import { useRef, useMemo, useEffect } from "react";
 import { getAssetPath } from "@/lib/utils";
 import { useScrollytelling } from "@/lib/useScrollytelling";
-import dynamic from 'next/dynamic';
-import '@dotlottie/react-player/dist/index.css';
-
-const DotLottiePlayer = dynamic(
-  () => import('@dotlottie/react-player').then((mod) => mod.DotLottiePlayer),
-  { ssr: false }
-);
 
 type POI = {
   startFrameNo: number;
@@ -50,7 +43,7 @@ export function JourneyPlayer({
     return (index: number) => getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(index).padStart(4, "0")}.webp`);
   }, [routeSlug, devicePath]);
 
-  const { currentFrame, progress, ready, loadProgress } = useScrollytelling({
+  const { currentFrame, progress, ready } = useScrollytelling({
     frameCount: totalFrames,
     getFrameSrc,
     canvasRef,
