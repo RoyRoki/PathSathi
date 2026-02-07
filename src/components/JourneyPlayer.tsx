@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import Image from "next/image";
+import { useRef, useMemo } from "react";
 import { getAssetPath } from "@/lib/utils";
+import { useScrollytelling } from "@/lib/useScrollytelling";
 
 type POI = {
   startFrameNo: number;
@@ -29,110 +29,87 @@ export function JourneyPlayer({
   children
 }: JourneyPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [currentFrame, setCurrentFrame] = useState(1);
-  const [activePOI, setActivePOI] = useState<POI | null>(null);
-  const [activePOIIndex, setActivePOIIndex] = useState<number>(-1);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const routeSlug = (assetFolder?.split("/")[0] || "siliguri-kurseong-darjeeling").toLowerCase();
 
   // Device-specific frame counts from route data
   const totalFrames = isMobile ? mobileFrames : desktopFrames;
   const devicePath = isMobile ? "mobile" : "desktop";
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!containerRef.current) return;
+  const getFrameSrc = useMemo(() => {
+    return (index: number) => getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(index).padStart(4, "0")}.webp`);
+  }, [routeSlug, devicePath]);
 
-      const container = containerRef.current;
-      const rect = container.getBoundingClientRect();
-      const scrollProgress = Math.max(0, Math.min(1, -rect.top / (rect.height - window.innerHeight)));
+  const { currentFrame, progress } = useScrollytelling({
+    frameCount: totalFrames,
+    getFrameSrc,
+    canvasRef,
+    triggerRef: containerRef,
+    // Increase scroll distance to slow down the animation relative to scroll speed
+    // This makes it harder to "skip" frames by scrolling too fast
+    end: `+=${totalFrames * 5}`,
+    scrub: 0.5
+  });
 
-      // Calculate frame (0-based index to match config and file naming)
-      const frame = Math.max(0, Math.min(totalFrames - 1, Math.floor(scrollProgress * totalFrames)));
-      setCurrentFrame(frame);
-
-      // Check for active POI - compare actual frame numbers
-      const poiIndex = pointsOfInterest.findIndex(
-        (p) => frame >= p.startFrameNo && frame <= p.endFrameNo
-      );
-      if (poiIndex !== -1) {
-        const poi = pointsOfInterest[poiIndex];
-        if (poi) {
-          setActivePOI(poi);
-        }
-        setActivePOIIndex(poiIndex);
-      } else {
-        setActivePOI(null);
-        setActivePOIIndex(-1);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [totalFrames, pointsOfInterest]);
-
-  const framePath = getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(currentFrame).padStart(4, "0")}.webp`);
-
-  const scrollProgress = currentFrame / totalFrames;
+  // Calculate active POI based on current frame from hook
+  const activePOIIndex = pointsOfInterest.findIndex(
+    (p) => currentFrame >= p.startFrameNo && currentFrame <= p.endFrameNo
+  );
+  const activePOI = activePOIIndex !== -1 ? pointsOfInterest[activePOIIndex] : null;
 
   return (
-    <div ref={containerRef} className="relative h-[500vh]">
+    <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
       {/* Progress Bar */}
-      <div className="sticky top-0 left-0 w-full h-0.5 bg-black/20 backdrop-blur-md z-50">
+      <div className="fixed top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
         <div
-          className="h-full bg-[hsl(var(--accent))] shadow-[0_0_8px_hsl(var(--accent)/0.4)] transition-all duration-100"
-          style={{ width: `${scrollProgress * 100}%` }}
+          className="h-full bg-[hsl(var(--accent))] shadow-[0_0_8px_hsl(var(--accent)/0.8)] transition-all duration-75 ease-out"
+          style={{ width: `${progress * 100}%` }}
         />
       </div>
 
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black" style={{ marginTop: '-2px' }}>
-        {/* Frame Display */}
-        <div className="relative w-full h-full">
-          <Image
-            src={framePath}
-            alt="Journey frame"
-            fill
-            className="object-cover"
-            priority
-            quality={100}
-            unoptimized
-          />
-          {/* Vignette overlay */}
-          <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.4)]" />
-        </div>
+      {/* Canvas Layer */}
+      <canvas
+        ref={canvasRef}
+        className="fixed inset-0 w-full h-full object-cover"
+      />
 
-        {/* POI Overlay - Alternating Positions */}
-        {activePOI && (
-          <div
-            className={`absolute md:top-1/2 md:-translate-y-1/2 bottom-20 md:bottom-auto z-10 animate-in fade-in slide-in-from-bottom-4 duration-500 ${activePOIIndex % 2 === 0 ? 'left-4 md:left-8' : 'right-4 md:right-8'
-              }`}
-          >
-            <div className="w-72 md:w-80 bg-black/40 backdrop-blur-xl rounded-2xl p-4 md:p-5 border border-white/15 shadow-xl overflow-hidden">
-              {/* Copper accent bar */}
-              <div className="absolute top-0 left-0 right-0 h-[3px] bg-[hsl(var(--accent))]" />
-              <h3 className="font-display text-base md:text-lg font-semibold text-white mb-1.5 md:mb-2 tracking-tight">
-                {activePOI.header}
-              </h3>
-              <p className="text-xs md:text-sm lg:text-base text-white/80 leading-snug">
-                {activePOI.shortDescription}
-              </p>
-            </div>
-          </div>
-        )}
+      {/* Vignette overlay */}
+      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-10" />
 
-        {/* End of Journey Content (Agency Info) */}
+      {/* POI Overlay - Alternating Positions */}
+      {activePOI && (
         <div
-          className="absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-700 ease-in-out pointer-events-none"
-          style={{
-            opacity: scrollProgress > 0.98 ? 1 : 0,
-            pointerEvents: scrollProgress > 0.98 ? 'auto' : 'none',
-            backdropFilter: scrollProgress > 0.98 ? 'blur(10px) brightness(0.5)' : 'none'
-          }}
+          key={activePOI.header} // Force re-animation on change
+          className={`fixed md:top-1/2 md:-translate-y-1/2 bottom-32 md:bottom-auto z-40 animate-in fade-in slide-in-from-bottom-8 duration-700 ${activePOIIndex % 2 === 0 ? 'left-6 md:left-12' : 'right-6 md:right-12'
+            }`}
         >
+          <div className="w-80 md:w-96 bg-black/30 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl overflow-hidden group hover:bg-black/40 transition-colors">
+            {/* Copper accent bar */}
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[hsl(var(--accent))] to-transparent opacity-80" />
+
+            <h3 className="font-display text-lg md:text-xl font-bold text-white mb-2 tracking-tight group-hover:text-[hsl(var(--accent))] transition-colors">
+              {activePOI.header}
+            </h3>
+            <p className="text-sm md:text-base text-white/90 leading-relaxed font-light">
+              {activePOI.shortDescription}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* End of Journey Content (Agency Info) */}
+      <div
+        className="fixed inset-0 z-30 flex items-center justify-center transition-all duration-1000 ease-in-out pointer-events-none"
+        style={{
+          opacity: progress > 0.96 ? 1 : 0,
+          pointerEvents: progress > 0.96 ? 'auto' : 'none',
+          backdropFilter: progress > 0.96 ? 'blur(20px) brightness(0.4)' : 'none'
+        }}
+      >
+        <div className={`transition-transform duration-1000 ${progress > 0.96 ? 'translate-y-0' : 'translate-y-10'}`}>
           {children}
         </div>
-
       </div>
     </div>
   );
