@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Clock, Users, Phone, Mail, Globe } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Users } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { getActiveRoutes, getRouteAgencies } from '@/lib/services/routes'
 import type { Route, Agency } from '@/lib/types/domain'
