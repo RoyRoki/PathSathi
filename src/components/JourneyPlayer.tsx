@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { getAssetPath } from "@/lib/utils";
 import { useScrollytelling } from "@/lib/useScrollytelling";
 import dynamic from 'next/dynamic';
@@ -33,8 +33,10 @@ export function JourneyPlayer({
   desktopFrames,
   pointsOfInterest = [],
   isMobile,
+  onLoadProgress,
+  onReady,
   children
-}: JourneyPlayerProps) {
+}: JourneyPlayerProps & { onLoadProgress?: (progress: number) => void; onReady?: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -57,8 +59,16 @@ export function JourneyPlayer({
     // This makes it harder to "skip" frames by scrolling too fast
     end: `+=${totalFrames * 5}`,
     scrub: 0.5,
+    onLoadProgress,
     preloadAll: true
   });
+
+  // Effect to notify parent when ready
+  useEffect(() => {
+    if (ready) {
+      onReady?.();
+    }
+  }, [ready, onReady]);
 
   // Calculate active POI based on current frame from hook
   const activePOIIndex = pointsOfInterest.findIndex(
@@ -69,27 +79,7 @@ export function JourneyPlayer({
   return (
     <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
       {/* Loading State - White Gradient with Lottie */}
-      <div
-        className={`absolute inset-0 z-[60] flex flex-col items-center justify-center bg-gradient-to-b from-white via-gray-50 to-gray-100 transition-opacity duration-700 ease-out ${ready ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-      >
-        <div className="w-64 h-64 md:w-80 md:h-80">
-          <DotLottiePlayer
-            src={getAssetPath("/loading.lottie")}
-            loop
-            autoplay
-          />
-        </div>
-        <p className="text-gray-400 font-medium text-xs md:text-sm animate-pulse tracking-[0.2em] uppercase mt-4">
-          Preparing Journey... {loadProgress}%
-        </p>
-        {/* Progress Bar for Loading */}
-        <div className="w-48 h-1 bg-gray-200/20 mt-4 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-accent transition-all duration-300 ease-out"
-            style={{ width: `${loadProgress}%` }}
-          />
-        </div>
-      </div>
+      {/* Loading State removed - handled by parent */}
 
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
@@ -135,7 +125,7 @@ export function JourneyPlayer({
         style={{
           opacity: progress > 0.96 ? 1 : 0,
           pointerEvents: progress > 0.96 ? 'auto' : 'none',
-          backdropFilter: progress > 0.96 ? 'blur(20px) brightness(0.4)' : 'none'
+          backdropFilter: progress > 0.96 ? 'brightness(0.4)' : 'none'
         }}
       >
         <div className={`transition-transform duration-1000 ${progress > 0.96 ? 'translate-y-0' : 'translate-y-10'}`}>

@@ -16,6 +16,7 @@ type UseScrollytellingOptions = {
   end?: string;
   onFrameChange?: (index: number) => void;
   onProgress?: (progress: number) => void;
+  onLoadProgress?: (progress: number) => void;
   preloadAll?: boolean;
 };
 
@@ -29,6 +30,7 @@ export function useScrollytelling({
   end,
   onFrameChange,
   onProgress,
+  onLoadProgress,
   preloadAll = false
 }: UseScrollytellingOptions) {
   // Store loaded images in a Map for quick access
@@ -179,7 +181,9 @@ export function useScrollytelling({
           img.onload = () => {
             imagesRef.current.set(i, img);
             loadedCount++;
-            setLoadProgress(Math.round((loadedCount / frameCount) * 100));
+            const p = Math.round((loadedCount / frameCount) * 100);
+            setLoadProgress(p);
+            onLoadProgress?.(p);
 
             if (loadedCount === frameCount) {
               setReady(true);
@@ -188,7 +192,10 @@ export function useScrollytelling({
           img.onerror = () => {
             // Even on error, count it so we don't get stuck
             loadedCount++;
-            setLoadProgress(Math.round((loadedCount / frameCount) * 100));
+            const p = Math.round((loadedCount / frameCount) * 100);
+            setLoadProgress(p);
+            onLoadProgress?.(p);
+
             if (loadedCount === frameCount) {
               setReady(true);
             }

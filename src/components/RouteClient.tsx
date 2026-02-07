@@ -56,6 +56,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   const [activeAgencyId, setActiveAgencyId] = useState<string | undefined>(initialTid);
   const [loading, setLoading] = useState(true);
   const [routeConfig, setRouteConfig] = useState<RouteConfig | null>(null);
+  const [journeyProgress, setJourneyProgress] = useState(0);
+  const [journeyReady, setJourneyReady] = useState(false);
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -312,9 +314,38 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
 
 
 
-  if (!route && loading) {
+  // Combined loading state: 
+  // 1. Initial route data loading
+  // 2. Journey assets preloading (if route exists)
+  // We show the loading screen if:
+  // - Route is still loading (loading = true)
+  // - Route exists BUT journey isn't ready yet (!journeyReady)
+  const showLoading = loading || (route && !journeyReady);
+
+  if (showLoading) {
     return (
-      <LoadingScreen />
+      <>
+        <LoadingScreen
+          progress={route ? journeyProgress : undefined}
+          backgroundImage={route?.hero_image ? getAssetPath(route.hero_image) : undefined}
+        />
+        {/* Mount JourneyPlayer early to start preloading, but keep it hidden/interactive-disabled until ready */}
+        {route && (
+          <main className="fixed inset-0 z-0 opacity-0 pointer-events-none">
+            <section className="journey-player-container relative bg-black">
+              <JourneyPlayer
+                assetFolder={route.asset_folder}
+                mobileFrames={routeConfig?.totalFrames || 1828}
+                desktopFrames={routeConfig?.totalFrames || 1920}
+                pointsOfInterest={routeConfig?.pointsOfInterest}
+                isMobile={isMobile}
+                onLoadProgress={setJourneyProgress}
+                onReady={() => setJourneyReady(true)}
+              />
+            </section>
+          </main>
+        )}
+      </>
     );
   }
 
@@ -433,6 +464,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
             desktopFrames={routeConfig?.totalFrames || 1920}
             pointsOfInterest={routeConfig?.pointsOfInterest}
             isMobile={isMobile}
+            onLoadProgress={setJourneyProgress}
+            onReady={() => setJourneyReady(true)}
           >
             {activeAgencyId && agency && <AgencyContactFooter agency={agency} />}
           </JourneyPlayer>
