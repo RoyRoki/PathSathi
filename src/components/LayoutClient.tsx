@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { SmoothScroll } from "@/components/SmoothScroll";
+
 import { GitHubPagesRedirect } from "@/components/GitHubPagesRedirect";
 
 export function LayoutClient({ children }: { children: React.ReactNode }) {
