@@ -36,6 +36,7 @@ export function useScrollytelling({
 
   const [progress, setProgress] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
+  const [ready, setReady] = useState(false);
 
   // Track last successfully rendered frame to prevent flickering
   const lastRenderedFrameRef = useRef<number>(-1);
@@ -46,7 +47,10 @@ export function useScrollytelling({
   // Load a single frame
   const loadFrame = useCallback((index: number) => {
     if (index < 0 || index >= frameCount) return;
-    if (imagesRef.current.has(index)) return; // Already loaded
+    if (imagesRef.current.has(index)) {
+      if (index === 0) setReady(true);
+      return;
+    }
     if (requestsRef.current.has(index)) return; // Already requested
 
     const img = new Image();
@@ -57,6 +61,7 @@ export function useScrollytelling({
     img.onload = () => {
       imagesRef.current.set(index, img);
       requestsRef.current.delete(index);
+      if (index === 0) setReady(true);
     };
 
     img.onerror = () => {

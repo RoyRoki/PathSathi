@@ -1,7 +1,12 @@
 'use client'
 
-import { DotLottiePlayer } from '@dotlottie/react-player'
-import '@dotlottie/react-player/dist/index.css'
+import dynamic from 'next/dynamic';
+import '@dotlottie/react-player/dist/index.css';
+
+const DotLottiePlayer = dynamic(
+    () => import('@dotlottie/react-player').then((mod) => mod.DotLottiePlayer),
+    { ssr: false }
+);
 import { getAssetPath } from '@/lib/utils'
 
 export function LoadingScreen() {

@@ -3,8 +3,13 @@
 import { useRef, useMemo } from "react";
 import { getAssetPath } from "@/lib/utils";
 import { useScrollytelling } from "@/lib/useScrollytelling";
-import { DotLottiePlayer } from '@dotlottie/react-player';
+import dynamic from 'next/dynamic';
 import '@dotlottie/react-player/dist/index.css';
+
+const DotLottiePlayer = dynamic(
+  () => import('@dotlottie/react-player').then((mod) => mod.DotLottiePlayer),
+  { ssr: false }
+);
 
 type POI = {
   startFrameNo: number;
