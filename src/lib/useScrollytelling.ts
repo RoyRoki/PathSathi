@@ -202,6 +202,7 @@ export function useScrollytelling({
 
   return {
     currentFrame,
-    progress
+    progress,
+    ready
   };
 }

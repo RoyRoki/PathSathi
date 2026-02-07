@@ -41,7 +41,7 @@ export function JourneyPlayer({
     return (index: number) => getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(index).padStart(4, "0")}.webp`);
   }, [routeSlug, devicePath]);
 
-  const { currentFrame, progress } = useScrollytelling({
+  const { currentFrame, progress, ready } = useScrollytelling({
     frameCount: totalFrames,
     getFrameSrc,
     canvasRef,
@@ -60,6 +60,15 @@ export function JourneyPlayer({
 
   return (
     <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
+      {/* Loading State - White Gradient */}
+      <div
+        className={`absolute inset-0 z-[60] flex items-center justify-center bg-gradient-to-b from-white via-gray-50 to-gray-100 transition-opacity duration-700 ease-out ${ready ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-[hsl(var(--accent))] rounded-full animate-spin" />
+          <p className="text-gray-500 font-medium text-sm animate-pulse tracking-widest uppercase">Loading Journey...</p>
+        </div>
+      </div>
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
         <div
