@@ -240,6 +240,36 @@
     animation: glow 3s ease-in-out infinite;
   }
 
+  @keyframes ripple {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+
+  .animate-ripple {
+    animation: ripple 3s linear infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
+
   /* Premium noise texture */
   .noise-bg::before {
     content: "";
@@ -338,6 +368,35 @@
       0 0 20px rgba(255, 183, 77, 0.4),
       0 0 40px rgba(255, 183, 77, 0.2);
   }
+}
+
+/* Minimal flat card styling */
+.clay-card {
+  background-color: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  /* Very subtle border */
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  /* Almost invisible shadow */
+  transition: all 0.3s ease;
+}
+
+.clay-card:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  /* Soft lift on hover */
+  transform: translateY(-2px);
+}
+
+/* Tea Leaf green tint background */
+.tea-leaf-bg {
+  background-color: #F0F4F2;
+}
+
+/* Ghost footer styling */
+.ghost-footer {
+  background-color: #F9FAFB;
+  color: #2C3E50;
 }
 
 /* Custom cursor CSS removed */

@@ -12,6 +12,7 @@ import { gsap, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
 import SplitType from 'split-type'
 import { RequestSection } from '@/components/home/RequestSection'
+import { CustomCursor } from '@/components/ui/CustomCursor'
 
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null)
@@ -60,56 +61,84 @@ export default function Home() {
 
   useGSAP(() => {
     // ── Hero animations ──
+    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
+
+    // Initial Reveal
     if (titleRef.current) {
       const split = new SplitType(titleRef.current, {
         types: 'words',
         tagName: 'span'
       })
 
-      const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
-
-      // Ken Burns background — slow zoom
-      tl.to('.hero-bg-image', {
-        scale: 1.15,
+      // Background gentle zoom
+      tl.to('.hero-bg-mountains img', {
+        scale: 1.1,
         duration: 20,
         ease: 'none',
       }, 0)
 
-      // Word-by-word reveal
+      // Text Reveal
       tl.from(split.words, {
         yPercent: 100,
         opacity: 0,
         stagger: 0.08,
-        duration: 0.8,
+        duration: 1.2,
         ease: 'power4.out',
-      }, 0.3)
-        // .from('.hero-subtitle', {
-        //   y: 40,
-        //   opacity: 0,
-        //   duration: 0.8,
-        //   ease: 'power3.out'
-        // }, '-=0.4')
-        // .from('.hero-cta', {   <-- Temporarily removed to fix visibility
-        //   y: 30,
-        //   opacity: 0,
-        //   duration: 0.7,
-        //   ease: 'power3.out',
-        // }, '-=0.3')
+      }, 0.5)
+        .from('.hero-subtitle', {
+          y: 30,
+          opacity: 0,
+          duration: 1,
+          ease: 'power3.out',
+        }, '-=0.8')
+        .from('.hero-cta', {
+          y: 20,
+          opacity: 0,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power3.out',
+        }, '-=0.6')
         .from('.hero-scroll-indicator', {
           opacity: 0,
           duration: 1,
-        }, '-=0.2')
+        }, '-=0.4')
     }
 
-    // Parallax on scroll
-    gsap.to('.hero-bg-layer', {
-      yPercent: 40,
+    // ── Parallax Scroll Effects ──
+    // Mountains (Background) - Moves slowest (0.2x visual speed relative to scroll)
+    gsap.to('.hero-bg-mountains', {
+      yPercent: 20, // Moves slightly down as we scroll down
       ease: 'none',
       scrollTrigger: {
         trigger: heroRef.current,
         start: 'top top',
         end: 'bottom top',
-        scrub: 1,
+        scrub: true,
+      }
+    })
+
+    // Tea Gardens (Mid-ground) - Moves medium speed (0.5x)
+    gsap.to('.hero-bg-midground', {
+      yPercent: 40, // Moves faster than mountains
+      ease: 'none',
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      }
+    })
+
+    // Text/Foreground (1x - Natural scroll, but we can add a slight opacity fade)
+    gsap.to('.hero-foreground', {
+      yPercent: 60, // Parallax text movement
+      opacity: 0,
+      ease: 'none',
+      scrollTrigger: {
+        trigger: heroRef.current,
+        start: 'top top',
+        end: 'bottom top', // Fade out by 60% of viewport
+        scrub: true,
       }
     })
 
@@ -122,7 +151,7 @@ export default function Home() {
           start: 'top 85%',
           toggleActions: 'play none none none',
         },
-        y: 40,
+        y: 20, // Gentle 20px slide as requested
         opacity: 0,
         duration: 0.8,
         delay: i * 0.2,
@@ -165,7 +194,7 @@ export default function Home() {
         start: 'top 85%',
         toggleActions: 'play none none none',
       },
-      y: 60,
+      y: 20,
       opacity: 0,
       duration: 1.0,
       ease: 'power3.out',
@@ -185,7 +214,7 @@ export default function Home() {
           start: 'top 90%',
           toggleActions: 'play none none none',
         },
-        y: 40,
+        y: 20,
         opacity: 0,
         stagger: 0.05,
         duration: 0.8,
@@ -199,7 +228,7 @@ export default function Home() {
         start: 'top 95%',
         toggleActions: 'play none none none',
       },
-      y: 30,
+      y: 20,
       opacity: 0,
       duration: 1,
       ease: 'power3.out',
@@ -209,67 +238,84 @@ export default function Home() {
   }, { scope: heroRef, dependencies: [] })
 
   return (
-    <main ref={heroRef} className="relative overflow-hidden">
+    <main className="relative overflow-hidden cursor-none"> {/* Hide default cursor here too for safety */}
+      <CustomCursor />
 
       {/* ═══════════ HERO ═══════════ */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background with warm overlay */}
-        <div className="hero-bg-layer absolute inset-0 -z-10">
+      <section ref={heroRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
+
+        {/* Layer 1: Background Mountains (Moves slow) */}
+        <div className="hero-bg-mountains absolute inset-0 -z-30 h-[120%] w-full top-0">
           <Image
             src={getAssetPath("/images/darjeeling_hero_bg_1770289408859.webp")}
-            alt="Darjeeling mountains hero background"
+            alt="Himalayan Peaks"
             fill
-            className="hero-bg-image object-cover"
+            className="object-cover"
             priority
+            quality={90}
           />
-          {/* Warm editorial overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
-          <div className="absolute inset-0 bg-[hsl(24,40%,30%)]/10 mix-blend-multiply" />
+          {/* Atmospheric Haze */}
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/80" />
         </div>
 
-        <Container className="relative z-10 py-32 px-6">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Title — light serif, editorial feel */}
-            <h1
-              ref={titleRef}
-              className="mb-8 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] text-white leading-[1.1] drop-shadow-lg"
-              style={{ perspective: '1000px' }}
-            >
-              The Journey Begins<br />Before You Leave.
-            </h1>
+        {/* Layer 2: Midground Tea Gardens (Moves medium) */}
+        <div className="hero-bg-midground absolute inset-0 -z-20 h-[120%] w-full top-[20%]">
+          <Image
+            src={getAssetPath("/images/darjeeling_tea_garden.webp")}
+            alt="Tea Gardens"
+            fill
+            className="object-cover object-top opacity-90"
+            priority
+          />
+          {/* Blend Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+        </div>
 
-            {/* Subtitle — honest, clear */}
-            <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-lg sm:text-xl text-white/90 leading-relaxed font-light text-balance">
-              Experience your next adventure through an immersive 3D visual odyssey. Scroll through routes, discover hidden gems, and connect directly with the experts who lead the way.
-            </p>
+        {/* Layer 3: Foreground Text */}
+        <div className="hero-foreground relative z-10 py-32 px-6 w-full">
+          <Container>
+            <div className="max-w-5xl mx-auto text-center">
+              {/* Title */}
+              <h1
+                ref={titleRef}
+                className="mb-8 font-display text-5xl sm:text-7xl md:text-8xl lg:text-[100px] text-white leading-[1.05] drop-shadow-2xl tracking-tight"
+                style={{ perspective: '1000px', textShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
+              >
+                The Journey Begins<br />Before You Leave.
+              </h1>
 
-            {/* Dual CTA */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <button
-                onClick={() => {
-                  document.getElementById('routes')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-white text-primary text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-white/90 hover:shadow-xl transition-all duration-500"
-              >
-                Explore Routes
-                <MapPin className="w-4 h-4" />
-              </button>
-              <Link
-                href="/signup"
-                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-accent/90 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-500 backdrop-blur-sm border border-transparent"
-              >
-                List Your Agency — Free
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              {/* Subtitle */}
+              <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-xl md:text-2xl text-white/90 leading-relaxed font-light text-balance drop-shadow-lg">
+                Experience your next adventure through an immersive 3D visual odyssey. Move through the mountains, from your screen.
+              </p>
+
+              {/* Dual CTA */}
+              <div className="flex flex-col sm:flex-row gap-5 items-center justify-center">
+                <button
+                  onClick={() => {
+                    document.getElementById('routes')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="hero-cta group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary text-sm tracking-[0.2em] uppercase font-bold rounded-full hover:bg-white/90 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-500"
+                >
+                  Start Exploring
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </button>
+                <Link
+                  href="/signup"
+                  className="hero-cta inline-flex items-center gap-3 px-10 py-5 bg-white/10 text-white text-sm tracking-[0.2em] uppercase font-semibold rounded-full hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 transition-all duration-500"
+                >
+                  For Agencies
+                </Link>
+              </div>
             </div>
-          </div>
-        </Container>
+          </Container>
+        </div>
 
-        {/* Scroll indicator — animated thin line */}
-        <div className="hero-scroll-indicator absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-          <span className="text-white/50 text-xs tracking-[0.2em] uppercase font-light">Scroll</span>
-          <div className="w-px h-12 bg-white/20 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/60 animate-scroll-indicator" />
+        {/* Scroll indicator */}
+        <div className="hero-scroll-indicator absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-20 mix-blend-difference">
+          <span className="text-white/70 text-[10px] tracking-[0.3em] uppercase">Scroll to Fly</span>
+          <div className="w-[1px] h-16 bg-white/20 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-white animate-scroll-indicator" />
           </div>
         </div>
       </section>
@@ -287,9 +333,9 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10 relative">
-            {/* Connecting line for desktop */}
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+          <div className="grid md:grid-cols-3 gap-8 relative">
+            {/* Connecting line for desktop - Subtle and behind content */}
+            <div className="hidden md:block absolute top-[48px] left-[15%] right-[15%] h-px bg-border/40 -z-10" />
 
             {[
               {
@@ -308,16 +354,19 @@ export default function Home() {
                 desc: 'Love the route? Connect with verified agencies that specialize in it. No middlemen, just a direct line to your guide.'
               }
             ].map((item) => (
-              <div key={item.step} className="magic-step relative text-center group">
-                {/* Step Number Circle */}
-                <div className="w-24 h-24 mx-auto bg-white border border-border rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-accent/50 group-hover:shadow-lg group-hover:shadow-accent/10 transition-all duration-500">
+              <div key={item.step} className="magic-step flex flex-col items-center text-center group h-full">
+                {/* Step Number Circle with Card feel */}
+                <div className="w-24 h-24 bg-white border border-border rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-accent/50 group-hover:shadow-[0_0_20px_rgba(249,115,22,0.15)] transition-all duration-500">
                   <span className="font-display text-3xl text-primary group-hover:text-accent transition-colors duration-300">{item.step}</span>
                 </div>
 
-                <h3 className="text-2xl font-display text-primary mb-4">{item.title}</h3>
-                <p className="text-muted-foreground leading-relaxed px-4 text-balance">
-                  {item.desc}
-                </p>
+                {/* Content Card */}
+                <div className="flex-1 w-full p-8 rounded-3xl bg-secondary/5 border border-transparent group-hover:border-border/60 transition-colors duration-300">
+                  <h3 className="text-xl font-display text-primary mb-4">{item.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed text-sm text-balance">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
@@ -428,75 +477,68 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* ═══════════ B2B SECTION — For Travel Agencies ═══════════ */}
-      <section className="relative py-32 md:py-40 overflow-hidden bg-[hsl(220,40%,10%)] text-white">
-        {/* Background Texture */}
-        <div className="absolute inset-0 opacity-10 mix-blend-overlay">
-          <Image
-            src={getAssetPath("/images/sikkim_monastery_1770289444287.png")}
-            alt="Background texture"
-            fill
-            className="object-cover grayscale"
-          />
-        </div>
+      {/* ═══════════ PARTNER PORTAL SECTION — Light Theme ═══════════ */}
+      <section className="relative py-24 md:py-32 overflow-hidden tea-leaf-bg">
+        <Container>
+          {/* Section Headline */}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-primary mb-6 leading-tight">
+              Empower Your Agency with Immersive Storytelling.
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Join the only platform designed to showcase the beauty of North Bengal and Sikkim through interactive, 3D-driven itineraries.
+            </p>
+          </div>
 
-        <Container className="relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left: Pitch */}
-            <div>
-              <span className="inline-block py-1 px-3 rounded-full bg-accent/20 text-accent text-xs font-bold tracking-widest uppercase mb-6 border border-accent/20">
-                For Agency Owners
-              </span>
-              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-white mb-6 leading-[1.1]">
-                Travel Agencies:<br />Join the Future of Itineraries.
-              </h2>
-              <p className="text-white/60 text-lg mb-10 leading-relaxed max-w-xl">
-                Stop sending boring PDFs. Showcase your expertise in high-definition 3D. Give your clients a reason to book with you.
-              </p>
+          {/* Triple-Value Grid — Horizontal 3 Columns */}
+          <div className="grid md:grid-cols-3 gap-8 mb-12">
+            {[
+              {
+                number: "01",
+                title: "Immersive Sales",
+                desc: "Let travelers 'drive' the route before they book. Higher engagement leads to faster conversions."
+              },
+              {
+                number: "02",
+                title: "Direct Connections",
+                desc: "Your WhatsApp, Phone, and Email are front-and-center. No middlemen, no hidden fees."
+              },
+              {
+                number: "03",
+                title: "Zero Commission",
+                desc: "PathSathi is a bridge, not a booking engine. You keep 100% of your profits from every lead."
+              }
+            ].map((feature) => (
+              <div key={feature.number} className="clay-card p-8 group hover:scale-[1.02] transition-transform duration-500">
+                {/* Orange accent number */}
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border/30">
+                  <span className="text-accent font-display text-4xl font-bold">{feature.number}.</span>
+                  <h3 className="text-xl font-display text-primary">{feature.title}</h3>
+                </div>
+                <p className="text-muted-foreground leading-relaxed">
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
 
-              <div className="flex flex-col sm:flex-row gap-5">
+          {/* Floating Action Bar - Minimalist */}
+          <div className="bg-white/80 backdrop-blur-md border border-neutral-200/60 rounded-2xl p-6 max-w-4xl mx-auto shadow-sm hover:shadow-md transition-all duration-300">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-muted-foreground mb-1">Ready to elevate your agency?</p>
+                <p className="text-lg font-display text-primary">Start showcasing routes in immersive 3D</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-bold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/20 transition-all duration-500"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-bold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/20 transition-all duration-500 whitespace-nowrap"
                 >
-                  Activat Free Beta Plan
+                  Activate <span className="hidden sm:inline">Your</span> Free Beta Plan
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-white/20 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 transition-all duration-500"
-                >
-                  Login
-                </Link>
-              </div>
-            </div>
 
-            {/* Right: Features Grid */}
-            <div className="grid gap-8">
-              {[
-                {
-                  title: "Immersive Sales",
-                  desc: "Let travelers 'feel' the drive before they book. Higher engagement means higher conversion."
-                },
-                {
-                  title: "Direct Leads",
-                  desc: "Your WhatsApp, Phone, and Email are front-and-center. We send the customer straight to you."
-                },
-                {
-                  title: "Zero Commission",
-                  desc: "We aren't a booking engine; we are a bridge. You keep 100% of your profits."
-                }
-              ].map((feature, i) => (
-                <div key={i} className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors duration-300">
-                  <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
-                    <span className="text-accent font-display text-2xl">{i + 1}</span>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-display mb-2 text-white">{feature.title}</h3>
-                    <p className="text-white/50 leading-relaxed text-sm">{feature.desc}</p>
-                  </div>
-                </div>
-              ))}
+              </div>
             </div>
           </div>
         </Container>
@@ -504,23 +546,13 @@ export default function Home() {
       {/* ═══════════ CUSTOM PATH SECTION ═══════════ */}
       <RequestSection />
 
-      {/* ═══════════ TRUST & SOCIAL PROOF ═══════════ */}
-      <section className="relative py-24 text-center overflow-hidden">
-        {/* Background Image with Filter */}
-        <div className="absolute inset-0 -z-10">
-          <Image
-            src={getAssetPath("/images/footer_bg.webp")}
-            alt="Siliguri Mountains"
-            fill
-            className="object-cover brightness-[0.4] grayscale-[20%]"
-          />
-        </div>
-
+      {/* ═══════════ TRUST & SOCIAL PROOF — Ghost Footer ═══════════ */}
+      <section className="relative py-24 text-center overflow-hidden ghost-footer border-t border-border/20">
         <Container>
-          <h3 className="footer-reveal-title font-display text-3xl text-white mb-4">
+          <h3 className="footer-reveal-title font-display text-3xl mb-4">
             Crafted in Siliguri. Built for the Mountains.
           </h3>
-          <p className="footer-reveal-text text-white/80 text-lg font-light max-w-xl mx-auto italic">
+          <p className="footer-reveal-text text-muted-foreground text-lg font-light max-w-xl mx-auto italic">
             "For every road that leads to the mountains, there is a story. We help you tell it."
           </p>
         </Container>

@@ -117,21 +117,28 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     });
   }, [slug]);
 
+  // Track which config source we are using (mobile/desktop)
+  const [configSource, setConfigSource] = useState<"mobile" | "desktop">("desktop");
+
   // Load route configuration dynamically based on device
   useEffect(() => {
     const loadConfig = async () => {
-      const devicePath = isMobile ? "mobile" : "desktop";
+      const targetSource = isMobile ? "mobile" : "desktop";
       try {
-        const response = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/${devicePath}/meta/config.json`));
+        const response = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/${targetSource}/meta/config.json`));
         if (response.ok) {
           const config = await response.json();
           setRouteConfig(config);
+          setConfigSource(targetSource);
         } else {
-          // Fallback to legacy path if new path doesn't exist yet
+          // Fallback to legacy/desktop path if new path doesn't exist
+          console.warn(`[RouteClient] ${targetSource} config not found, falling back to desktop/legacy`);
           const fallbackResponse = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/meta/config.json`));
           if (fallbackResponse.ok) {
             const config = await fallbackResponse.json();
             setRouteConfig(config);
+            // Assume legacy is desktop or compatible
+            setConfigSource("desktop");
           }
         }
       } catch (error) {
@@ -277,6 +284,25 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
       );
 
       const filtered = agencies.filter(Boolean) as Agency[];
+
+      // MOCK AGENCY FOR DEMONSTRATION - REMOVE BEFORE PROD
+      if (filtered.length === 0) {
+        filtered.push({
+          id: 'mock-agency-1',
+          name: 'Himalayan Explorers',
+          contactNo: '+91 98765 43210',
+          email: 'contact@himalayan.com',
+          website: 'https://himalayan.com',
+          address: 'Sevoke Road, Siliguri, WB',
+          isVerified: true,
+          whatsapp: '+91 98765 43210',
+          logoUrl: 'https://ui-avatars.com/api/?name=Himalayan+Explorers&background=random&color=fff&size=200',
+          status: 'approved',
+          trialStart: new Date(),
+          trialExpiry: new Date(Date.now() + 86400000)
+        });
+      }
+
       setAgencyList(filtered);
 
       // If we have an active agency from URL, select it
@@ -339,6 +365,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
                 desktopFrames={routeConfig?.totalFrames || 1920}
                 pointsOfInterest={routeConfig?.pointsOfInterest}
                 isMobile={isMobile}
+                activeConfigSource={configSource}
                 onLoadProgress={setJourneyProgress}
                 onReady={() => setJourneyReady(true)}
               />
@@ -464,6 +491,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
             desktopFrames={routeConfig?.totalFrames || 1920}
             pointsOfInterest={routeConfig?.pointsOfInterest}
             isMobile={isMobile}
+            activeConfigSource={configSource}
             onLoadProgress={setJourneyProgress}
             onReady={() => setJourneyReady(true)}
           >
@@ -474,19 +502,19 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
 
       {/* Partner / Agency Section - HIDDEN if Agency Selected (now in Player) */}
       {!activeAgencyId && (
-        <section className="relative z-10 bg-slate-950 py-24 px-6 border-t border-white/10">
+        <section className="relative z-10 bg-[#FAFAFA] py-32 px-6 border-t border-black/5">
           <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
             {/* Default view: Show "Book This Route" if no agency is selected via URL */}
             <>
               {/* Section Header */}
-              <div className="text-center mb-16 space-y-4">
+              <div className="text-center mb-16 space-y-6">
                 <span className="text-accent text-xs font-bold uppercase tracking-[0.3em]">
                   Connect for Planning
                 </span>
-                <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
+                <h2 className="font-serif text-4xl md:text-5xl text-neutral-900 tracking-tight">
                   Choose Your Travel Agency
                 </h2>
-                <p className="text-white/60 max-w-lg mx-auto font-light">
+                <p className="text-neutral-500 max-w-lg mx-auto font-light leading-relaxed text-lg">
                   Select an agency to view their contact details. Reach out directly via WhatsApp, phone, or email to plan your journey.
                 </p>
               </div>
@@ -495,13 +523,13 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
                 agencies={agencyList}
                 activeId={activeAgencyId}
                 onSelect={handleAgencySelect}
-                className="relative bottom-auto left-auto translate-x-0 flex flex-wrap justify-center gap-4 py-3 px-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md mb-12"
+                className="relative bottom-auto left-auto translate-x-0 w-full mb-16"
               />
 
               <AgencySheet
                 agency={agency}
                 hasAgencies={agencyList.length > 0}
-                className="relative bottom-auto left-auto translate-x-0 w-full max-w-3xl mx-auto"
+                className="relative bottom-auto left-auto translate-x-0 w-full max-w-3xl mx-auto flex justify-center"
               />
             </>
           </div>

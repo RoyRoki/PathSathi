@@ -47,60 +47,58 @@ export function Navbar() {
     return (
         <nav
             ref={navRef}
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
-                ? "bg-white/95 backdrop-blur-xl border-b border-border/60"
-                : "bg-transparent"
+            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${isScrolled
+                ? "top-4 mx-4 md:mx-auto md:max-w-5xl rounded-full bg-white/70 backdrop-blur-[16px] border border-white/40 shadow-lg shadow-black/5"
+                : "bg-transparent border-transparent py-4"
                 }`}
         >
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
-                <div className="flex items-center justify-between h-18 py-5">
-                    {/* Logo — text-only, Playfair Display */}
-                    <Link href="/" className="group">
+            <div className={`mx-auto px-6 lg:px-8 transition-all duration-500 ${isScrolled ? "py-3" : "py-4"} `}>
+                <div className="flex items-center justify-between">
+                    {/* Logo — Shimmer Effect */}
+                    <Link href="/" className="group relative overflow-hidden">
                         <span
-                            className={`font-display text-2xl tracking-tight transition-colors duration-300 ${isScrolled ? "text-foreground" : "text-white"
+                            className={`font-display text-2xl tracking-tight transition-colors duration-300 relative z-10 ${isScrolled ? "text-primary" : "text-white"
                                 }`}
                         >
                             PathSathi
                         </span>
+                        {/* Shimmer overlay */}
+                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent -translate-x-[150%] group-hover:animate-shimmer z-20 mix-blend-overlay pointer-events-none" />
                     </Link>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-10">
+                    <div className="hidden md:flex items-center gap-8">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className={`relative text-sm tracking-[0.05em] font-medium transition-all duration-300 ${isScrolled
-                                    ? "text-foreground/70 hover:text-foreground"
+                                className={`text-sm tracking-[0.1em] uppercase font-medium transition-all duration-300 ${isScrolled
+                                    ? "text-primary/80 hover:text-primary"
                                     : "text-white/80 hover:text-white"
-                                    } group`}
+                                    }`}
                             >
                                 {link.label}
-                                <span
-                                    className={`absolute -bottom-0.5 left-0 w-0 h-px transition-all duration-300 group-hover:w-full ${isScrolled ? "bg-foreground" : "bg-white"
-                                        }`}
-                                />
                             </Link>
                         ))}
                     </div>
 
-                    {/* CTA — text link style */}
+                    {/* CTA */}
                     <div className="hidden md:block">
                         <Link
                             href="#routes"
-                            className={`text-sm tracking-[0.05em] font-medium transition-colors duration-300 ${isScrolled
-                                ? "text-accent hover:text-accent/80"
-                                : "text-white/90 hover:text-white"
+                            className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-[0.1em] uppercase transition-all duration-300 border ${isScrolled
+                                ? "bg-primary text-white border-primary hover:bg-primary/90 hover:shadow-lg"
+                                : "bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-md"
                                 }`}
                         >
-                            Plan a Journey
+                            Plan Journey
                         </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <button
-                        className={`md:hidden p-2 rounded-lg transition-all ${isScrolled
-                            ? "text-foreground hover:bg-muted"
+                        className={`md:hidden p-2 rounded-full transition-all ${isScrolled
+                            ? "text-primary hover:bg-secondary/10"
                             : "text-white hover:bg-white/10"
                             }`}
                         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -111,34 +109,35 @@ export function Navbar() {
                 </div>
             </div>
 
-            {/* Mobile Menu — bottom sheet style */}
+            {/* Mobile Menu — Detached & Glassmorphic */}
             <AnimatePresence>
                 {isMobileMenuOpen && (
                     <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-                        className="md:hidden bg-white/95 backdrop-blur-xl border-t border-border/50"
+                        initial={{ opacity: 0, scale: 0.95, y: -20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                        className="absolute top-full mt-2 left-0 right-0 p-4"
                     >
-                        <div className="px-6 py-6 space-y-1">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    className="block py-3 text-foreground/80 hover:text-foreground transition-colors font-medium"
-                                    onClick={() => setIsMobileMenuOpen(false)}
-                                >
-                                    {link.label}
-                                </Link>
-                            ))}
-                            <div className="pt-3 border-t border-border/50">
+                        <div className="bg-white/90 backdrop-blur-xl border border-white/50 rounded-3xl shadow-2xl p-6 overflow-hidden">
+                            <div className="flex flex-col space-y-4">
+                                {navLinks.map((link) => (
+                                    <Link
+                                        key={link.href}
+                                        href={link.href}
+                                        className="text-lg font-display text-primary hover:text-accent transition-colors"
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                ))}
+                                <div className="h-px bg-border/50 my-2" />
                                 <Link
                                     href="#routes"
-                                    className="block py-3 text-accent font-medium"
+                                    className="text-lg font-display text-accent"
                                     onClick={() => setIsMobileMenuOpen(false)}
                                 >
-                                    Plan a Journey
+                                    Plan Journey
                                 </Link>
                             </div>
                         </div>

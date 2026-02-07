@@ -17,6 +17,7 @@ type JourneyPlayerProps = {
   desktopFrames: number;
   pointsOfInterest?: POI[];
   isMobile: boolean;
+  activeConfigSource?: "mobile" | "desktop";
   children?: React.ReactNode;
 };
 
@@ -26,6 +27,7 @@ export function JourneyPlayer({
   desktopFrames,
   pointsOfInterest = [],
   isMobile,
+  activeConfigSource,
   onLoadProgress,
   onReady,
   children
@@ -35,9 +37,13 @@ export function JourneyPlayer({
 
   const routeSlug = (assetFolder?.split("/")[0] || "siliguri-kurseong-darjeeling").toLowerCase();
 
+  // Use config source if available, otherwise fallback to isMobile check
+  // This ensures that if we fell back to desktop config on mobile, we also load desktop frames
+  const devicePath = activeConfigSource || (isMobile ? "mobile" : "desktop");
+
   // Device-specific frame counts from route data
-  const totalFrames = isMobile ? mobileFrames : desktopFrames;
-  const devicePath = isMobile ? "mobile" : "desktop";
+  // If we are using mobile config, use mobile frames. If desktop config, use desktop frames
+  const totalFrames = devicePath === "mobile" ? mobileFrames : desktopFrames;
 
   const getFrameSrc = useMemo(() => {
     return (index: number) => getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(index).padStart(4, "0")}.webp`);

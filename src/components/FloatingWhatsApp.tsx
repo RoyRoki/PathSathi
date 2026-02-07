@@ -31,19 +31,22 @@ export function FloatingWhatsApp({ phoneNumber, agencyName }: FloatingWhatsAppPr
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gradient-to-tr from-[#25D366] to-[#40E0D0] text-white p-2.5 sm:pl-4 sm:pr-6 sm:py-3 rounded-full shadow-[0_8px_30px_rgb(37,211,102,0.4)] transition-all duration-300 hover:scale-105 hover:-translate-y-1 hover:shadow-[0_12px_40px_rgb(37,211,102,0.6)] group animate-in slide-in-from-bottom-4 fade-in duration-700 backdrop-blur-sm border border-white/20"
+            className="fixed bottom-6 right-6 z-50 group flex items-center justify-center"
         >
-            <div className="bg-white rounded-full p-2 text-[#25D366] shadow-sm">
-                <WhatsAppIcon className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
+            {/* Pulse Aura - Two concentric ripples */}
+            <div className="absolute inset-0 rounded-full bg-emerald-500/30 animate-[ripple_3s_infinite]" />
+            <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-[ripple_3s_infinite_0.5s]" />
+
+            {/* Glass Pill - Slides out on hover */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 h-12 pr-14 pl-5 flex flex-col justify-center bg-white/10 backdrop-blur-md border border-white/20 rounded-full opacity-0 translate-x-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-0 group-hover:w-auto pointer-events-none whitespace-nowrap overflow-hidden">
+                <span className="text-[9px] font-bold text-emerald-100 uppercase tracking-wider mb-0.5">Contact Agent</span>
+                <span className="text-xs font-semibold text-white tracking-tight">Chat on WhatsApp</span>
             </div>
 
-            <div className="hidden sm:flex flex-col items-start leading-none">
-                <span className="text-[10px] font-medium opacity-90 uppercase tracking-wider mb-0.5">Contact Agent</span>
-                <span className="font-bold tracking-tight text-sm">Chat on WhatsApp</span>
+            {/* Main Icon Button */}
+            <div className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#10b981] to-[#064e3b] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(16,185,129,0.4)] border border-white/20 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-[0_12px_30px_rgba(16,185,129,0.5)] z-10">
+                <WhatsAppIcon className="w-7 h-7 fill-white" />
             </div>
-
-            {/* Pulse Effect */}
-            <span className="absolute inset-0 rounded-full bg-[#25D366] opacity-30 animate-pulse -z-10 blur-xl" />
         </a>
     );
 }
