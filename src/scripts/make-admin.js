@@ -18,7 +18,7 @@ if (fs.existsSync(envPath)) {
 
 const projectId = process.env.FIREBASE_ADMIN_PROJECT_ID;
 const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
-const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n");
+const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n")?.trim();
 
 if (!projectId || !clientEmail || !privateKey) {
     console.error("❌ Missing server-side credentials in .env.local");
