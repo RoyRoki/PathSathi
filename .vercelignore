@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.git
+.DS_Store
+.env
+.env.local
+.vercel
+public/routes/siliguri-kurseong-darjeeling/mobile/raw
+public/routes/siliguri-kurseong-darjeeling/mobile/videos
+public/routes/siliguri-kurseong-darjeeling/desktop/video

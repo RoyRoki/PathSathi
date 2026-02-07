@@ -15,12 +15,12 @@ export function LayoutClient({ children }: { children: React.ReactNode }) {
             <GitHubPagesRedirect />
             {/* <CustomCursor /> */}
             {!isAdminRoute && <Navbar />}
-            <SmoothScroll>
-                <div className="flex-1">
-                    {children}
-                    {!isAdminRoute && <Footer />}
-                </div>
-            </SmoothScroll>
+            {/* <SmoothScroll> */}
+            <div className="flex-1">
+                {children}
+                {!isAdminRoute && <Footer />}
+            </div>
+            {/* </SmoothScroll> */}
         </body>
     );
 }

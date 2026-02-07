@@ -175,6 +175,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
         opacity: 0,
         y: 100,
         duration: 1.2,
+        clearProps: "transform",
       }, "-=0.6");
 
     // Enhanced parallax for hero background (desktop only)
@@ -417,7 +418,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
       </section>
 
       {/* Scrollytelling Section */}
-      <section className="journey-player-container relative">
+      <section className="journey-player-container relative bg-black">
         <ErrorBoundary fallback={
           <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-8">
             <div className="max-w-2xl text-center">

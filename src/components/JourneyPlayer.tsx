@@ -48,7 +48,7 @@ export function JourneyPlayer({
     return (index: number) => getAssetPath(`/routes/${routeSlug}/${devicePath}/frames/frame_${String(index).padStart(4, "0")}.webp`);
   }, [routeSlug, devicePath]);
 
-  const { currentFrame, progress, ready } = useScrollytelling({
+  const { currentFrame, progress, ready, loadProgress } = useScrollytelling({
     frameCount: totalFrames,
     getFrameSrc,
     canvasRef,
@@ -56,7 +56,8 @@ export function JourneyPlayer({
     // Increase scroll distance to slow down the animation relative to scroll speed
     // This makes it harder to "skip" frames by scrolling too fast
     end: `+=${totalFrames * 5}`,
-    scrub: 0.5
+    scrub: 0.5,
+    preloadAll: true
   });
 
   // Calculate active POI based on current frame from hook
@@ -79,8 +80,15 @@ export function JourneyPlayer({
           />
         </div>
         <p className="text-gray-400 font-medium text-xs md:text-sm animate-pulse tracking-[0.2em] uppercase mt-4">
-          Preparing Journey...
+          Preparing Journey... {loadProgress}%
         </p>
+        {/* Progress Bar for Loading */}
+        <div className="w-48 h-1 bg-gray-200/20 mt-4 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-accent transition-all duration-300 ease-out"
+            style={{ width: `${loadProgress}%` }}
+          />
+        </div>
       </div>
 
       {/* Progress Bar */}

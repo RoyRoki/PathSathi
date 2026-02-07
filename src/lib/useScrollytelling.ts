@@ -16,6 +16,7 @@ type UseScrollytellingOptions = {
   end?: string;
   onFrameChange?: (index: number) => void;
   onProgress?: (progress: number) => void;
+  preloadAll?: boolean;
 };
 
 export function useScrollytelling({
@@ -27,7 +28,8 @@ export function useScrollytelling({
   start = "top top",
   end,
   onFrameChange,
-  onProgress
+  onProgress,
+  preloadAll = false
 }: UseScrollytellingOptions) {
   // Store loaded images in a Map for quick access
   const imagesRef = useRef<Map<number, HTMLImageElement>>(new Map());
@@ -35,6 +37,7 @@ export function useScrollytelling({
   const requestsRef = useRef<Set<number>>(new Set());
 
   const [progress, setProgress] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0);
   const [currentFrame, setCurrentFrame] = useState(0);
   const [ready, setReady] = useState(false);
 
@@ -154,8 +157,54 @@ export function useScrollytelling({
     const trigger = triggerRef.current;
     if (!trigger) return;
 
-    // Initial load of first few frames
-    updateBuffer(0);
+    // Initial load logic
+    if (preloadAll) {
+      // Full preload strategy
+      let loadedCount = 0;
+      const batchSize = 10; // Load in small batches to not freeze UI
+
+      const loadBatch = (startIndex: number) => {
+        if (startIndex >= frameCount) return;
+
+        const endIndex = Math.min(startIndex + batchSize, frameCount);
+        for (let i = startIndex; i < endIndex; i++) {
+          if (imagesRef.current.has(i)) {
+            loadedCount++;
+            if (loadedCount === frameCount) setReady(true);
+            continue;
+          }
+
+          const img = new Image();
+          img.src = getFrameSrc(i);
+          img.onload = () => {
+            imagesRef.current.set(i, img);
+            loadedCount++;
+            setLoadProgress(Math.round((loadedCount / frameCount) * 100));
+
+            if (loadedCount === frameCount) {
+              setReady(true);
+            }
+          };
+          img.onerror = () => {
+            // Even on error, count it so we don't get stuck
+            loadedCount++;
+            setLoadProgress(Math.round((loadedCount / frameCount) * 100));
+            if (loadedCount === frameCount) {
+              setReady(true);
+            }
+          };
+        }
+
+        // Schedule next batch
+        requestAnimationFrame(() => loadBatch(endIndex));
+      };
+
+      loadBatch(0);
+
+    } else {
+      // Buffer strategy (Default)
+      updateBuffer(0);
+    }
 
     const playhead = { frame: 0 };
 
@@ -183,6 +232,7 @@ export function useScrollytelling({
         end: end ?? `+=${frameCount * 2}`, // Multiplier controls scroll speed feel
         scrub,
         pin: true,
+        anticipatePin: 1,
         // invalidateOnRefresh: true, // Handle resize better
       }
     });
@@ -205,9 +255,17 @@ export function useScrollytelling({
     return () => window.removeEventListener('resize', handleResize);
   }, [renderFrame]);
 
+  // Force render frame 0 when ready to avoid black screen
+  useEffect(() => {
+    if (ready) {
+      renderFrame(0);
+    }
+  }, [ready, renderFrame]);
+
   return {
     currentFrame,
     progress,
+    loadProgress,
     ready
   };
 }
