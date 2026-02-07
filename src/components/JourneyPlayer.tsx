@@ -3,6 +3,8 @@
 import { useRef, useMemo } from "react";
 import { getAssetPath } from "@/lib/utils";
 import { useScrollytelling } from "@/lib/useScrollytelling";
+import { DotLottiePlayer } from '@dotlottie/react-player';
+import '@dotlottie/react-player/dist/index.css';
 
 type POI = {
   startFrameNo: number;
@@ -60,15 +62,22 @@ export function JourneyPlayer({
 
   return (
     <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
-      {/* Loading State - White Gradient */}
+      {/* Loading State - White Gradient with Lottie */}
       <div
-        className={`absolute inset-0 z-[60] flex items-center justify-center bg-gradient-to-b from-white via-gray-50 to-gray-100 transition-opacity duration-700 ease-out ${ready ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+        className={`absolute inset-0 z-[60] flex flex-col items-center justify-center bg-gradient-to-b from-white via-gray-50 to-gray-100 transition-opacity duration-700 ease-out ${ready ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       >
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-gray-200 border-t-[hsl(var(--accent))] rounded-full animate-spin" />
-          <p className="text-gray-500 font-medium text-sm animate-pulse tracking-widest uppercase">Loading Journey...</p>
+        <div className="w-64 h-64 md:w-80 md:h-80">
+          <DotLottiePlayer
+            src={getAssetPath("/loading.lottie")}
+            loop
+            autoplay
+          />
         </div>
+        <p className="text-gray-400 font-medium text-xs md:text-sm animate-pulse tracking-[0.2em] uppercase mt-4">
+          Preparing Journey...
+        </p>
       </div>
+
       {/* Progress Bar */}
       <div className="absolute top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
         <div
