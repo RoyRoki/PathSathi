@@ -62,8 +62,7 @@ export function Navbar() {
                         >
                             PathSathi
                         </span>
-                        {/* Shimmer overlay */}
-                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent -translate-x-[150%] group-hover:animate-shimmer z-20 mix-blend-overlay pointer-events-none" />
+
                     </Link>
 
                     {/* Desktop Navigation */}

@@ -10,23 +10,19 @@ export function LayoutClient({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isAdminRoute = pathname?.startsWith("/admin");
     return (
-        <body className="font-sans bg-background text-foreground antialiased min-h-screen flex flex-col noise-bg px-0">
+        <body className="font-sans bg-background text-foreground antialiased min-h-[100dvh] flex flex-col noise-bg px-0">
             <GitHubPagesRedirect />
             {/* <CustomCursor /> */}
             {!isAdminRoute && <Navbar />}
             {/* <SmoothScroll> */}
 
-            {/* Main Content - Relative & Z-10 to cover footer */}
-            <main className="relative z-10 bg-background shadow-2xl mb-[80vh] md:mb-[60vh] lg:mb-[50vh]">
+            {/* Main Content */}
+            <div className="flex-1 bg-background relative flex flex-col">
                 {children}
-            </main>
+            </div>
 
-            {/* Sticky Reveal Footer - Fixed & Z-0 */}
-            {!isAdminRoute && (
-                <div className="fixed bottom-0 left-0 w-full z-0 h-[80vh] md:h-[60vh] lg:h-[50vh] flex flex-col justify-end">
-                    <Footer variant="ghost" />
-                </div>
-            )}
+            {/* Standard Footer */}
+            {!isAdminRoute && <Footer variant="ghost" />}
             {/* </SmoothScroll> */}
         </body>
     );

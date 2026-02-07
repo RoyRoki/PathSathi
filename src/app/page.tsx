@@ -12,7 +12,7 @@ import { gsap, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
 import SplitType from 'split-type'
 import { RequestSection } from '@/components/home/RequestSection'
-import { CustomCursor } from '@/components/ui/CustomCursor'
+
 
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null)
@@ -63,83 +63,60 @@ export default function Home() {
     // ── Hero animations ──
     const tl = gsap.timeline({ defaults: { ease: 'power4.out' } })
 
-    // Initial Reveal
+    // Background (Independent)
+    tl.to('.hero-bg-mountains img', {
+      scale: 1.1,
+      duration: 20,
+      ease: 'none',
+    }, 0)
+
+    // Title Reveal
     if (titleRef.current) {
       const split = new SplitType(titleRef.current, {
         types: 'words',
         tagName: 'span'
       })
 
-      // Background gentle zoom
-      tl.to('.hero-bg-mountains img', {
-        scale: 1.1,
-        duration: 20,
-        ease: 'none',
-      }, 0)
-
-      // Text Reveal
       tl.from(split.words, {
         yPercent: 100,
         opacity: 0,
-        stagger: 0.08,
-        duration: 1.2,
+        stagger: 0.05,
+        duration: 0.8,
         ease: 'power4.out',
-      }, 0.5)
-        .from('.hero-subtitle', {
-          y: 30,
-          opacity: 0,
-          duration: 1,
-          ease: 'power3.out',
-        }, '-=0.8')
-        .from('.hero-cta', {
-          y: 20,
-          opacity: 0,
-          duration: 0.8,
-          stagger: 0.1,
-          ease: 'power3.out',
-        }, '-=0.6')
-        .from('.hero-scroll-indicator', {
-          opacity: 0,
-          duration: 1,
-        }, '-=0.4')
+      }, 0.1)
     }
 
+    // Subtitle & Rest (Sequenced with absolute timing for reliability)
+    // Subtitle & Rest (Sequenced with absolute timing for reliability)
+    tl.fromTo('.hero-subtitle',
+      { y: 20, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.8, ease: 'power3.out' },
+      0.5
+    )
+
+    tl.fromTo('.hero-cta',
+      { y: 20, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 0.8, stagger: 0.1, ease: 'power3.out' },
+      0.6
+    )
+
+    tl.fromTo('.hero-scroll-indicator',
+      { autoAlpha: 0 },
+      { autoAlpha: 1, duration: 1 },
+      0.9
+    )
+
     // ── Parallax Scroll Effects ──
-    // Mountains (Background) - Moves slowest (0.2x visual speed relative to scroll)
-    gsap.to('.hero-bg-mountains', {
-      yPercent: 20, // Moves slightly down as we scroll down
-      ease: 'none',
-      scrollTrigger: {
-        trigger: heroRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-      }
-    })
-
-    // Tea Gardens (Mid-ground) - Moves medium speed (0.5x)
-    gsap.to('.hero-bg-midground', {
-      yPercent: 40, // Moves faster than mountains
-      ease: 'none',
-      scrollTrigger: {
-        trigger: heroRef.current,
-        start: 'top top',
-        end: 'bottom top',
-        scrub: true,
-      }
-    })
-
-    // Text/Foreground (1x - Natural scroll, but we can add a slight opacity fade)
     gsap.to('.hero-foreground', {
-      yPercent: 60, // Parallax text movement
-      opacity: 0,
-      ease: 'none',
       scrollTrigger: {
         trigger: heroRef.current,
         start: 'top top',
-        end: 'bottom top', // Fade out by 60% of viewport
+        end: 'bottom center', // Fade out halfway through
         scrub: true,
-      }
+      },
+      y: -50, // Move up slightly
+      opacity: 0,
+      ease: 'none'
     })
 
     // ── Magic section — stagger reveal ──
@@ -238,14 +215,16 @@ export default function Home() {
   }, { scope: heroRef, dependencies: [] })
 
   return (
-    <main className="relative overflow-hidden cursor-none"> {/* Hide default cursor here too for safety */}
-      <CustomCursor />
+    <main className="relative overflow-hidden">
+
 
       {/* ═══════════ HERO ═══════════ */}
-      <section ref={heroRef} className="relative h-screen w-full flex items-center justify-center overflow-hidden bg-black">
+      <section ref={heroRef} className="relative h-[100dvh] w-full flex items-center justify-center overflow-hidden">
+        {/* Layer 0: Deep Black Background (Fallback) */}
+        <div className="absolute inset-0 bg-black -z-50" />
 
-        {/* Layer 1: Background Mountains (Moves slow) */}
-        <div className="hero-bg-mountains absolute inset-0 -z-30 h-[120%] w-full top-0">
+        {/* Layer 1: Background Mountains (Single Hero Image) */}
+        <div className="hero-bg-mountains absolute inset-0 z-0 h-full w-full top-0">
           <Image
             src={getAssetPath("/images/darjeeling_hero_bg_1770289408859.webp")}
             alt="Himalayan Peaks"
@@ -254,21 +233,8 @@ export default function Home() {
             priority
             quality={90}
           />
-          {/* Atmospheric Haze */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/30 via-transparent to-slate-900/80" />
-        </div>
-
-        {/* Layer 2: Midground Tea Gardens (Moves medium) */}
-        <div className="hero-bg-midground absolute inset-0 -z-20 h-[120%] w-full top-[20%]">
-          <Image
-            src={getAssetPath("/images/darjeeling_tea_garden.webp")}
-            alt="Tea Gardens"
-            fill
-            className="object-cover object-top opacity-90"
-            priority
-          />
-          {/* Blend Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+          {/* Atmospheric Haze - Enhanced for contrast */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80" />
         </div>
 
         {/* Layer 3: Foreground Text */}
@@ -295,14 +261,14 @@ export default function Home() {
                   onClick={() => {
                     document.getElementById('routes')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="hero-cta group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary text-sm tracking-[0.2em] uppercase font-bold rounded-full hover:bg-white/90 hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] transition-all duration-500"
+                  className="hero-cta will-change-transform group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary text-sm tracking-[0.2em] uppercase font-bold rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-500"
                 >
                   Start Exploring
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </button>
                 <Link
                   href="/signup"
-                  className="hero-cta inline-flex items-center gap-3 px-10 py-5 bg-white/10 text-white text-sm tracking-[0.2em] uppercase font-semibold rounded-full hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 transition-all duration-500"
+                  className="hero-cta will-change-transform inline-flex items-center gap-3 px-10 py-5 bg-white/10 text-white text-sm tracking-[0.2em] uppercase font-semibold rounded-full hover:bg-white/20 backdrop-blur-md border border-white/20 hover:border-white/40 transition-all duration-500"
                 >
                   For Agencies
                 </Link>

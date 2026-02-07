@@ -285,24 +285,6 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
 
       const filtered = agencies.filter(Boolean) as Agency[];
 
-      // MOCK AGENCY FOR DEMONSTRATION - REMOVE BEFORE PROD
-      if (filtered.length === 0) {
-        filtered.push({
-          id: 'mock-agency-1',
-          name: 'Himalayan Explorers',
-          contactNo: '+91 98765 43210',
-          email: 'contact@himalayan.com',
-          website: 'https://himalayan.com',
-          address: 'Sevoke Road, Siliguri, WB',
-          isVerified: true,
-          whatsapp: '+91 98765 43210',
-          logoUrl: 'https://ui-avatars.com/api/?name=Himalayan+Explorers&background=random&color=fff&size=200',
-          status: 'approved',
-          trialStart: new Date(),
-          trialExpiry: new Date(Date.now() + 86400000)
-        });
-      }
-
       setAgencyList(filtered);
 
       // If we have an active agency from URL, select it
