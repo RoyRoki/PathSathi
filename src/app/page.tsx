@@ -11,6 +11,7 @@ import { ScrollingGallery } from '@/components/ui/ScrollingGallery'
 import { gsap, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
 import SplitType from 'split-type'
+import { RequestSection } from '@/components/home/RequestSection'
 
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null)
@@ -212,19 +213,15 @@ export default function Home() {
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background with Video + warm overlay */}
+        {/* Background with warm overlay */}
         <div className="hero-bg-layer absolute inset-0 -z-10">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster={getAssetPath("/images/darjeeling_hero_bg_1770289408859.png")}
-            className="hero-bg-image object-cover w-full h-full"
-          >
-            {/* Placeholder video source - User to replace with actual asset */}
-            <source src="/videos/hero_loop.mp4" type="video/mp4" />
-          </video>
+          <Image
+            src={getAssetPath("/images/darjeeling_hero_bg_1770289408859.webp")}
+            alt="Darjeeling mountains hero background"
+            fill
+            className="hero-bg-image object-cover"
+            priority
+          />
           {/* Warm editorial overlay */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
           <div className="absolute inset-0 bg-[hsl(24,40%,30%)]/10 mix-blend-multiply" />
@@ -261,7 +258,7 @@ export default function Home() {
                 href="/signup"
                 className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-accent/90 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-500 backdrop-blur-sm border border-transparent"
               >
-                List Your Agency — Beta Free
+                List Your Agency — Free
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -343,8 +340,8 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Asymmetric grid */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* Asymmetric grid -> Horizontal scroll on mobile */}
+          <div className="flex md:grid md:grid-cols-2 gap-4 md:gap-8 overflow-x-auto snap-x snap-mandatory pb-8 -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible md:pb-0 scrollbar-visible md:scrollbar-default">
             {isLoading ? (
               // Loading skeleton
               <>
@@ -363,7 +360,7 @@ export default function Home() {
                   <Link
                     key={route.id}
                     href={`/routes/${route.pathSlug}`}
-                    className={`route-card group block ${isLarge ? 'md:col-span-2' : ''}`}
+                    className={`route-card group block min-w-[85vw] sm:min-w-[400px] md:min-w-0 flex-shrink-0 snap-center ${isLarge ? 'md:col-span-2' : ''}`}
                   >
                     <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[550px]' : 'h-[450px]'} shadow-lg hover:shadow-2xl transition-all duration-500`}>
                       {/* Image */}
@@ -462,7 +459,7 @@ export default function Home() {
                   href="/signup"
                   className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-bold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/20 transition-all duration-500"
                 >
-                  Activate Your Free Beta Plan
+                  Activat Free Beta Plan
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
@@ -504,6 +501,9 @@ export default function Home() {
           </div>
         </Container>
       </section>
+      {/* ═══════════ CUSTOM PATH SECTION ═══════════ */}
+      <RequestSection />
+
       {/* ═══════════ TRUST & SOCIAL PROOF ═══════════ */}
       <section className="relative py-24 text-center overflow-hidden">
         {/* Background Image with Filter */}
