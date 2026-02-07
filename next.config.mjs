@@ -8,7 +8,7 @@ const nextConfig = {
   basePath: isGitHubPages ? '/PathSathi' : '',
   assetPrefix: isGitHubPages ? '/PathSathi/' : '',
   images: {
-    unoptimized: isGitHubPages
+    unoptimized: true,
   },
   trailingSlash: true,
   reactStrictMode: true,
