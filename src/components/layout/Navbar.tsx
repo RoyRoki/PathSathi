@@ -38,7 +38,7 @@ export function Navbar() {
 
     const navLinks = [
         { href: "/#routes", label: "Routes" },
-        { href: "/#features", label: "How It Works" },
+        { href: "/#how-it-works", label: "How It Works" },
         { href: "/login", label: "For Agencies" },
     ];
 

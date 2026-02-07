@@ -3,29 +3,30 @@
 import Link from "next/link";
 
 export function Footer() {
-    const currentYear = new Date().getFullYear();
+
 
     const linkGroups = [
         {
             title: "Routes",
             links: [
-                { label: "Siliguri to Darjeeling", href: "/routes/siliguri-kurseong-darjeeling" },
-                { label: "Kolkata to Sundarbans", href: "/routes/kolkata-sundarbans" },
-                { label: "All Routes", href: "/#routes" },
+                { label: "North Bengal", href: "/routes/north-bengal" },
+                { label: "Sikkim", href: "/routes/sikkim" },
+                { label: "Bhutan", href: "/routes/types/bhutan" },
+                { label: "Offbeat Stays", href: "/routes/types/offbeat" },
             ],
         },
         {
-            title: "For Agencies",
+            title: "Agencies",
             links: [
-                { label: "Partner With Us", href: "/login" },
+                { label: "Partner With Us", href: "/signup" },
                 { label: "Agency Login", href: "/login" },
-                { label: "List a Route", href: "/login" },
+                { label: "Documentation", href: "/docs" },
             ],
         },
         {
-            title: "About",
+            title: "Company",
             links: [
-                { label: "How It Works", href: "/#features" },
+                { label: "Our Story", href: "/about" },
                 { label: "Privacy Policy", href: "/privacy" },
                 { label: "Terms of Service", href: "/terms" },
             ],
@@ -33,7 +34,7 @@ export function Footer() {
     ];
 
     return (
-        <footer className="bg-[hsl(var(--primary))] text-white/70">
+        <footer className="bg-[hsl(var(--primary))] text-white/70 border-t border-white/10">
             <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-14">
                     {/* Brand */}
@@ -42,7 +43,7 @@ export function Footer() {
                             <span className="font-display text-2xl text-white tracking-tight">PathSathi</span>
                         </Link>
                         <p className="text-white/50 text-sm leading-relaxed max-w-xs">
-                            Crafted in Siliguri. For every road that leads to the mountains.
+                            Crafted in Siliguri. Built for the Mountains.
                         </p>
                     </div>
 
@@ -71,7 +72,7 @@ export function Footer() {
                 {/* Bottom bar */}
                 <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs text-white/30">
-                        &copy; {currentYear} PathSathi. All rights reserved.
+                        &copy; 2026 PathSathi. All rights reserved.
                     </p>
                     <p className="text-xs text-white/30">
                         Siliguri, West Bengal, India

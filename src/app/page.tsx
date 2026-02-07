@@ -15,7 +15,7 @@ import SplitType from 'split-type'
 export default function Home() {
   const heroRef = useRef<HTMLElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
-  const featuresRef = useRef<HTMLDivElement>(null)
+
   const routesRef = useRef<HTMLElement>(null)
   const [routes, setRoutes] = useState<Route[]>([])
   const [_routeAgencies, setRouteAgencies] = useState<Record<string, Agency[]>>({})
@@ -112,35 +112,21 @@ export default function Home() {
       }
     })
 
-    // ── Features section — stagger reveal ──
-    const featureItems = gsap.utils.toArray<HTMLElement>('.feature-item')
-    featureItems.forEach((item, i) => {
-      gsap.from(item, {
+    // ── Magic section — stagger reveal ──
+    const magicSteps = gsap.utils.toArray<HTMLElement>('.magic-step')
+    magicSteps.forEach((step, i) => {
+      gsap.from(step, {
         scrollTrigger: {
-          trigger: item,
+          trigger: step,
           start: 'top 85%',
           toggleActions: 'play none none none',
         },
-        y: 60,
+        y: 40,
         opacity: 0,
-        duration: 1.0,
-        delay: i * 0.1,
+        duration: 0.8,
+        delay: i * 0.2,
         ease: 'power3.out',
       })
-    })
-
-    // Feature image parallax
-    gsap.from('.feature-image', {
-      scrollTrigger: {
-        trigger: '.feature-image',
-        start: 'top 85%',
-        toggleActions: 'play none none none',
-      },
-      y: 80,
-      opacity: 0,
-      scale: 0.95,
-      duration: 1.2,
-      ease: 'power3.out',
     })
 
     // ── Route cards ──
@@ -184,6 +170,41 @@ export default function Home() {
       ease: 'power3.out',
     })
 
+    // ── Footer animations ──
+    const footerTitle = document.querySelector('.footer-reveal-title') as HTMLElement
+    if (footerTitle) {
+      const splitFooter = new SplitType(footerTitle, {
+        types: 'words',
+        tagName: 'span'
+      })
+
+      gsap.from(splitFooter.words, {
+        scrollTrigger: {
+          trigger: footerTitle,
+          start: 'top 90%',
+          toggleActions: 'play none none none',
+        },
+        y: 40,
+        opacity: 0,
+        stagger: 0.05,
+        duration: 0.8,
+        ease: 'power3.out',
+      })
+    }
+
+    gsap.from('.footer-reveal-text', {
+      scrollTrigger: {
+        trigger: '.footer-reveal-text',
+        start: 'top 95%',
+        toggleActions: 'play none none none',
+      },
+      y: 30,
+      opacity: 0,
+      duration: 1,
+      ease: 'power3.out',
+      delay: 0.2
+    })
+
   }, { scope: heroRef, dependencies: [] })
 
   return (
@@ -191,19 +212,22 @@ export default function Home() {
 
       {/* ═══════════ HERO ═══════════ */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background with Ken Burns + warm overlay */}
+        {/* Background with Video + warm overlay */}
         <div className="hero-bg-layer absolute inset-0 -z-10">
-          <Image
-            src={getAssetPath("/images/darjeeling_hero_bg_1770289408859.png")}
-            alt="Darjeeling mountains at dawn"
-            fill
-            className="hero-bg-image object-cover origin-center"
-            priority
-            quality={90}
-          />
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster={getAssetPath("/images/darjeeling_hero_bg_1770289408859.png")}
+            className="hero-bg-image object-cover w-full h-full"
+          >
+            {/* Placeholder video source - User to replace with actual asset */}
+            <source src="/videos/hero_loop.mp4" type="video/mp4" />
+          </video>
           {/* Warm editorial overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
-          <div className="absolute inset-0 bg-[hsl(24,40%,30%)]/20 mix-blend-multiply" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
+          <div className="absolute inset-0 bg-[hsl(24,40%,30%)]/10 mix-blend-multiply" />
         </div>
 
         <Container className="relative z-10 py-32 px-6">
@@ -214,28 +238,30 @@ export default function Home() {
               className="mb-8 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] text-white leading-[1.1] drop-shadow-lg"
               style={{ perspective: '1000px' }}
             >
-              Travel Agencies: Join the Future
+              The Journey Begins<br />Before You Leave.
             </h1>
 
             {/* Subtitle — honest, clear */}
-            <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-lg sm:text-xl text-white/85 leading-relaxed font-light">
-              Login and activate your <strong className="text-accent">FREE BETA plan</strong> to showcase your routes with immersive journeys. Let travelers connect directly with your agency.
+            <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-lg sm:text-xl text-white/90 leading-relaxed font-light text-balance">
+              Experience your next adventure through an immersive 3D visual odyssey. Scroll through routes, discover hidden gems, and connect directly with the experts who lead the way.
             </p>
 
             {/* Dual CTA */}
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <Link
-                href="/login"
-                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/30 transition-all duration-500"
+              <button
+                onClick={() => {
+                  document.getElementById('routes')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-white text-primary text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-white/90 hover:shadow-xl transition-all duration-500"
               >
-                Agency Login
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+                Explore Routes
+                <MapPin className="w-4 h-4" />
+              </button>
               <Link
                 href="/signup"
-                className="hero-cta inline-flex items-center gap-3 px-8 py-4 border border-white/30 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-500 backdrop-blur-sm"
+                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-accent/90 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-accent hover:shadow-lg hover:shadow-accent/30 transition-all duration-500 backdrop-blur-sm border border-transparent"
               >
-                Join Beta (Free)
+                List Your Agency — Beta Free
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -251,57 +277,52 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════ FEATURES — Split Editorial Layout ═══════════ */}
-      <section ref={featuresRef} className="py-28 md:py-36">
+      {/* ═══════════ MAGIC SECTION — How it Works ═══════════ */}
+      <section id="how-it-works" className="py-24 md:py-32 bg-white relative overflow-hidden">
         <Container>
-          <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
-            {/* Left — atmospheric image */}
-            <div className="feature-image relative aspect-[4/5] rounded-2xl overflow-hidden">
-              <Image
-                src={getAssetPath("/images/premium-tea.png")}
-                alt="Tea estate in Darjeeling"
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-            </div>
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <span className="text-accent text-sm font-bold tracking-[0.2em] uppercase mb-4 block">How it Works</span>
+            <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-primary mb-6 leading-tight">
+              Don’t just book a trip.<br />Live the route.
+            </h2>
+            <p className="text-muted-foreground text-lg leading-relaxed">
+              Experience the journey before you commit. Our unique scroll-driven technology lets you explore every curve of the road in cinematic 3D.
+            </p>
+          </div>
 
-            {/* Right — numbered feature list */}
-            <div className="space-y-12">
-              <div>
-                <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">For Travel Agencies</p>
-                <h2 className="text-4xl sm:text-5xl leading-tight">
-                  Showcase Your Routes
-                </h2>
-              </div>
+          <div className="grid md:grid-cols-3 gap-10 relative">
+            {/* Connecting line for desktop */}
+            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-border to-transparent" />
 
-              {[
-                {
-                  num: '01',
-                  title: 'Premium Immersive Experience',
-                  desc: 'Showcase your routes with 1,920 scroll-driven frames. Travelers experience the journey before booking.'
-                },
-                {
-                  num: '02',
-                  title: 'Direct Customer Connection',
-                  desc: 'Your contact details (WhatsApp, phone, email) are displayed on every route you list. No middlemen.'
-                },
-                {
-                  num: '03',
-                  title: 'Free Beta Access',
-                  desc: 'Join now and activate your FREE beta plan. Login, list routes, and start connecting with travelers.'
-                },
-              ].map((feature) => (
-                <div key={feature.num} className="feature-item flex gap-6 group">
-                  <span className="text-accent text-sm font-medium tracking-wider mt-1.5 shrink-0">{feature.num}</span>
-                  <div>
-                    <h3 className="text-xl mb-2 group-hover:text-accent transition-colors duration-300">{feature.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{feature.desc}</p>
-                  </div>
+            {[
+              {
+                step: '01',
+                title: 'Choose Your Path',
+                desc: 'Browse a curated list of iconic journeys, from the tea gardens of North Bengal to the peaks of Sikkim.'
+              },
+              {
+                step: '02',
+                title: 'Scroll to Travel',
+                desc: 'Our "Immersive Journey" technology uses 1,920+ cinematic frames. As you scroll, you move along the road in 360-degree detail.'
+              },
+              {
+                step: '03',
+                title: 'Connect Directly',
+                desc: 'Love the route? Connect with verified agencies that specialize in it. No middlemen, just a direct line to your guide.'
+              }
+            ].map((item) => (
+              <div key={item.step} className="magic-step relative text-center group">
+                {/* Step Number Circle */}
+                <div className="w-24 h-24 mx-auto bg-white border border-border rounded-full flex items-center justify-center mb-8 relative z-10 group-hover:border-accent/50 group-hover:shadow-lg group-hover:shadow-accent/10 transition-all duration-500">
+                  <span className="font-display text-3xl text-primary group-hover:text-accent transition-colors duration-300">{item.step}</span>
                 </div>
-              ))}
-            </div>
+
+                <h3 className="text-2xl font-display text-primary mb-4">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed px-4 text-balance">
+                  {item.desc}
+                </p>
+              </div>
+            ))}
           </div>
         </Container>
       </section>
@@ -310,20 +331,20 @@ export default function Home() {
       <ScrollingGallery />
 
       {/* ═══════════ ROUTES — Asymmetric Magazine Grid ═══════════ */}
-      <section ref={routesRef} id="routes" className="py-28 md:py-36">
+      <section ref={routesRef} id="routes" className="py-24 md:py-32 bg-secondary/5">
         <Container>
           <div className="mb-16">
-            <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">Featured Routes</p>
-            <h2 className="text-4xl sm:text-5xl mb-4">
-              Agencies on PathSathi
+            <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">The Marketplace</p>
+            <h2 className="text-4xl sm:text-5xl mb-4 font-display text-primary">
+              Popular Journeys on PathSathi
             </h2>
-            <p className="text-muted-foreground max-w-xl text-lg">
-              Browse routes from verified travel agencies. Click to see details and connect with the agency directly.
+            <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
+              Scroll through routes, discover hidden gems, and connect directly with the experts who lead the way.
             </p>
           </div>
 
           {/* Asymmetric grid */}
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-8">
             {isLoading ? (
               // Loading skeleton
               <>
@@ -344,53 +365,59 @@ export default function Home() {
                     href={`/routes/${route.pathSlug}`}
                     className={`route-card group block ${isLarge ? 'md:col-span-2' : ''}`}
                   >
-                    <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[500px]' : 'h-[400px]'}`}>
+                    <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[550px]' : 'h-[450px]'} shadow-lg hover:shadow-2xl transition-all duration-500`}>
                       {/* Image */}
                       <Image
                         src={getAssetPath(route.heroImage || "/images/mountain_road_journey_1770289426463.png")}
                         alt={route.title}
                         fill
-                        className="route-image object-cover transition-transform duration-700"
+                        className="route-image object-cover transition-transform duration-700 will-change-transform"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90" />
 
                       {/* Content overlay at bottom */}
-                      <div className="route-content absolute inset-x-0 bottom-0 p-8 transition-transform duration-500">
-                        <h3 className="font-display text-3xl sm:text-4xl text-white mb-3 leading-tight">
+                      <div className="route-content absolute inset-x-0 bottom-0 p-8 sm:p-10 transition-transform duration-500">
+                        <h3 className="font-display text-3xl sm:text-4xl md:text-5xl text-white mb-3 leading-tight drop-shadow-md">
                           {route.title}
                         </h3>
-                        <p className="text-white/70 mb-5 max-w-lg">
+                        <p className="text-white/80 mb-6 max-w-lg text-lg font-light">
                           {route.subtitle}
                         </p>
 
-                        <div className="flex flex-col gap-4">
+                        <div className="flex flex-col gap-5">
                           {/* Stats Row */}
-                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/60 font-medium">
+                          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-white/90 font-medium">
                             {route.distanceKm && (
-                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                                <MapPin className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.distanceKm} km</span>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="w-4 h-4 text-accent" />
+                                <span>{route.distanceKm} KM</span>
                               </div>
                             )}
                             {route.durationHours && (
-                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                                <Clock className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.durationHours} hrs</span>
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-accent" />
+                                <span>{route.durationHours} Hours</span>
                               </div>
                             )}
+                            {/* Static Viewpoints Badge for "feel" as per request */}
+                            <div className="flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                              <span>20+ Viewpoints</span>
+                            </div>
+
                             {(route.sponsorCount ?? 0) > 0 && (
-                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase bg-accent/20 px-3 py-1 rounded-full border border-accent/30">
+                              <div className="flex items-center gap-2 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-md border border-white/20">
                                 <Users className="w-3.5 h-3.5 text-accent" />
-                                <span className="text-accent font-semibold">{route.sponsorCount} {route.sponsorCount === 1 ? 'agency' : 'agencies'} available</span>
+                                <span className="text-white font-semibold">{route.sponsorCount} Verified {route.sponsorCount === 1 ? 'Agency' : 'Agencies'}</span>
                               </div>
                             )}
                           </div>
 
                           {/* Action Row */}
-                          <div className="flex items-center justify-end border-t border-white/10 pt-4 mt-2">
-                            <div className="flex items-center gap-2 text-white group-hover:gap-3 transition-all">
-                              <span className="tracking-[0.15em] uppercase text-sm font-semibold">Explore</span>
-                              <ArrowRight className="w-4 h-4" />
+                          <div className="flex items-center justify-between border-t border-white/10 pt-5 mt-2">
+                            <div className="flex items-center gap-3 text-white group-hover:gap-4 transition-all">
+                              <span className="tracking-[0.15em] uppercase text-sm font-bold">Start Virtual Journey</span>
+                              <ArrowRight className="w-5 h-5 text-accent" />
                             </div>
                           </div>
                         </div>
@@ -404,40 +431,98 @@ export default function Home() {
         </Container>
       </section>
 
-      {/* ═══════════ CTA — Dark navy, honest copy ═══════════ */}
-      <section className="cta-section relative py-32 md:py-40 overflow-hidden bg-[hsl(var(--primary))]">
-        <div className="absolute inset-0 opacity-20">
+      {/* ═══════════ B2B SECTION — For Travel Agencies ═══════════ */}
+      <section className="relative py-32 md:py-40 overflow-hidden bg-[hsl(220,40%,10%)] text-white">
+        {/* Background Texture */}
+        <div className="absolute inset-0 opacity-10 mix-blend-overlay">
           <Image
             src={getAssetPath("/images/sikkim_monastery_1770289444287.png")}
-            alt="Sikkim monastery"
+            alt="Background texture"
             fill
-            className="object-cover"
+            className="object-cover grayscale"
           />
         </div>
 
-        <Container className="relative z-10 text-center">
-          <h2 className="cta-title font-display text-4xl sm:text-5xl md:text-6xl text-white/95 mb-6 leading-tight">
-            Ready to showcase your routes?
-          </h2>
-          <p className="text-white/60 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-            Join PathSathi today. Login to activate your FREE beta plan and start connecting with travelers.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-3 px-8 py-4 bg-white text-primary text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-white/90 hover:shadow-xl transition-all duration-500"
-            >
-              Agency Login
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-3 px-8 py-4 border border-white/25 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-500"
-            >
-              Join Beta (Free)
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+        <Container className="relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left: Pitch */}
+            <div>
+              <span className="inline-block py-1 px-3 rounded-full bg-accent/20 text-accent text-xs font-bold tracking-widest uppercase mb-6 border border-accent/20">
+                For Agency Owners
+              </span>
+              <h2 className="font-display text-4xl sm:text-5xl md:text-6xl text-white mb-6 leading-[1.1]">
+                Travel Agencies:<br />Join the Future of Itineraries.
+              </h2>
+              <p className="text-white/60 text-lg mb-10 leading-relaxed max-w-xl">
+                Stop sending boring PDFs. Showcase your expertise in high-definition 3D. Give your clients a reason to book with you.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-5">
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-bold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/20 transition-all duration-500"
+                >
+                  Activate Your Free Beta Plan
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-4 border border-white/20 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 transition-all duration-500"
+                >
+                  Login
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Features Grid */}
+            <div className="grid gap-8">
+              {[
+                {
+                  title: "Immersive Sales",
+                  desc: "Let travelers 'feel' the drive before they book. Higher engagement means higher conversion."
+                },
+                {
+                  title: "Direct Leads",
+                  desc: "Your WhatsApp, Phone, and Email are front-and-center. We send the customer straight to you."
+                },
+                {
+                  title: "Zero Commission",
+                  desc: "We aren't a booking engine; we are a bridge. You keep 100% of your profits."
+                }
+              ].map((feature, i) => (
+                <div key={i} className="flex gap-5 p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors duration-300">
+                  <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center shrink-0">
+                    <span className="text-accent font-display text-2xl">{i + 1}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-display mb-2 text-white">{feature.title}</h3>
+                    <p className="text-white/50 leading-relaxed text-sm">{feature.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </Container>
+      </section>
+      {/* ═══════════ TRUST & SOCIAL PROOF ═══════════ */}
+      <section className="relative py-24 text-center overflow-hidden">
+        {/* Background Image with Filter */}
+        <div className="absolute inset-0 -z-10">
+          <Image
+            src={getAssetPath("/images/footer_bg.webp")}
+            alt="Siliguri Mountains"
+            fill
+            className="object-cover brightness-[0.4] grayscale-[20%]"
+          />
+        </div>
+
+        <Container>
+          <h3 className="footer-reveal-title font-display text-3xl text-white mb-4">
+            Crafted in Siliguri. Built for the Mountains.
+          </h3>
+          <p className="footer-reveal-text text-white/80 text-lg font-light max-w-xl mx-auto italic">
+            "For every road that leads to the mountains, there is a story. We help you tell it."
+          </p>
         </Container>
       </section>
     </main>

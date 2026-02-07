@@ -11,12 +11,11 @@ interface ImageItem {
 }
 
 const images: ImageItem[] = [
-    { src: getAssetPath("/images/premium-tea.png"), alt: "Tea Estate" },
-    { src: getAssetPath("/images/luxury-monastery.png"), alt: "Monastery Interior" },
-    { src: getAssetPath("/images/darjeeling_hero_bg_1770289408859.png"), alt: "Himalayan Sunrise" },
-    { src: getAssetPath("/images/mountain_road_journey_1770289426463.png"), alt: "Winding Mountain Road" },
-    { src: getAssetPath("/images/sikkim_monastery_1770289444287.png"), alt: "Mountain Monastery" },
-    { src: getAssetPath("/images/dashboard-bg.png"), alt: "Misty Peaks" },
+    { src: getAssetPath("/images/darjeeling_tea_garden.webp"), alt: "Darjeeling Tea Garden" },
+    { src: getAssetPath("/images/darjeeling_tiger_hill.webp"), alt: "Tiger Hill Sunrise" },
+    { src: getAssetPath("/images/sikkim_gurudongmar_lake.webp"), alt: "Gurudongmar Lake" },
+    { src: getAssetPath("/images/darjeeling_batasia_loop.webp"), alt: "Batasia Loop" },
+    { src: getAssetPath("/images/sikkim_yumthang_valley.webp"), alt: "Yumthang Valley" },
 ];
 
 export function ScrollingGallery() {
