@@ -3,10 +3,10 @@
 import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Clock, Users } from 'lucide-react'
+import { ArrowRight, MapPin, Clock, Users, Phone, Mail, Globe } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
-import { getActiveRoutes } from '@/lib/services/routes'
-import type { Route } from '@/lib/types/domain'
+import { getActiveRoutes, getRouteAgencies } from '@/lib/services/routes'
+import type { Route, Agency } from '@/lib/types/domain'
 import { ScrollingGallery } from '@/components/ui/ScrollingGallery'
 import { gsap, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
@@ -18,6 +18,7 @@ export default function Home() {
   const featuresRef = useRef<HTMLDivElement>(null)
   const routesRef = useRef<HTMLElement>(null)
   const [routes, setRoutes] = useState<Route[]>([])
+  const [routeAgencies, setRouteAgencies] = useState<Record<string, Agency[]>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   // Only show routes that have asset folders in public/routes/
@@ -34,6 +35,19 @@ export default function Home() {
           route => VALID_ROUTE_SLUGS.includes(route.pathSlug)
         )
         setRoutes(validRoutes)
+
+        // Fetch agencies for each route
+        const agenciesMap: Record<string, Agency[]> = {}
+        for (const route of validRoutes) {
+          try {
+            const agencies = await getRouteAgencies(route.id)
+            agenciesMap[route.id] = agencies
+          } catch (error) {
+            console.error(`Error fetching agencies for route ${route.id}:`, error)
+            agenciesMap[route.id] = []
+          }
+        }
+        setRouteAgencies(agenciesMap)
       } catch (error) {
         console.error('Error fetching routes:', error)
       } finally {
@@ -200,22 +214,31 @@ export default function Home() {
               className="mb-8 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] text-white leading-[1.1] drop-shadow-lg"
               style={{ perspective: '1000px' }}
             >
-              Where the Mountains Tell Stories
+              Travel Agencies: Join the Future
             </h1>
 
             {/* Subtitle — honest, clear */}
             <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-lg sm:text-xl text-white/85 leading-relaxed font-light">
-              Immersive scroll-driven journeys through Darjeeling, Sikkim &amp; North Bengal
+              Login and activate your <strong className="text-accent">FREE BETA plan</strong> to showcase your routes with immersive journeys. Let travelers connect directly with your agency.
             </p>
 
-            {/* Single outlined CTA */}
-            <Link
-              href="#routes"
-              className="hero-cta inline-flex items-center gap-3 px-8 py-4 border border-white/30 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-500 backdrop-blur-sm"
-            >
-              Explore Routes
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            {/* Dual CTA */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+              <Link
+                href="/login"
+                className="hero-cta inline-flex items-center gap-3 px-8 py-4 bg-accent text-white text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/30 transition-all duration-500"
+              >
+                Agency Login
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/signup"
+                className="hero-cta inline-flex items-center gap-3 px-8 py-4 border border-white/30 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/50 transition-all duration-500 backdrop-blur-sm"
+              >
+                Join Beta (Free)
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </Container>
 
@@ -247,27 +270,27 @@ export default function Home() {
             {/* Right — numbered feature list */}
             <div className="space-y-12">
               <div>
-                <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">Why PathSathi</p>
+                <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">For Travel Agencies</p>
                 <h2 className="text-4xl sm:text-5xl leading-tight">
-                  Travel, Reimagined
+                  Showcase Your Routes
                 </h2>
               </div>
 
               {[
                 {
                   num: '01',
-                  title: 'Scroll-Driven Journeys',
-                  desc: 'Experience every turn of the road before you travel — 1,920 frames per route, driven by your scroll.'
+                  title: 'Premium Immersive Experience',
+                  desc: 'Showcase your routes with 1,920 scroll-driven frames. Travelers experience the journey before booking.'
                 },
                 {
                   num: '02',
-                  title: 'Verified Local Partners',
-                  desc: 'Every agency on PathSathi is locally verified. No middlemen, no markups.'
+                  title: 'Direct Customer Connection',
+                  desc: 'Your contact details (WhatsApp, phone, email) are displayed on every route you list. No middlemen.'
                 },
                 {
                   num: '03',
-                  title: 'Plan With Confidence',
-                  desc: 'See the route, know the distance, pick your agency — then go.'
+                  title: 'Free Beta Access',
+                  desc: 'Join now and activate your FREE beta plan. Login, list routes, and start connecting with travelers.'
                 },
               ].map((feature) => (
                 <div key={feature.num} className="feature-item flex gap-6 group">
@@ -290,12 +313,12 @@ export default function Home() {
       <section ref={routesRef} id="routes" className="py-28 md:py-36">
         <Container>
           <div className="mb-16">
-            <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">Routes</p>
+            <p className="text-sm tracking-[0.2em] uppercase text-muted-foreground mb-4 font-medium">Featured Routes</p>
             <h2 className="text-4xl sm:text-5xl mb-4">
-              Choose Your Journey
+              Agencies on PathSathi
             </h2>
             <p className="text-muted-foreground max-w-xl text-lg">
-              Each route is a real road — mapped, filmed, and connected to local travel agencies.
+              Browse routes from verified travel agencies. Click to see details and connect with the agency directly.
             </p>
           </div>
 
@@ -356,9 +379,9 @@ export default function Home() {
                               </div>
                             )}
                             {(route.sponsorCount ?? 0) > 0 && (
-                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
-                                <Users className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.sponsorCount} {route.sponsorCount === 1 ? 'partner' : 'partners'}</span>
+                              <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase bg-accent/20 px-3 py-1 rounded-full border border-accent/30">
+                                <Users className="w-3.5 h-3.5 text-accent" />
+                                <span className="text-accent font-semibold">{route.sponsorCount} {route.sponsorCount === 1 ? 'agency' : 'agencies'} available</span>
                               </div>
                             )}
                           </div>
@@ -394,18 +417,27 @@ export default function Home() {
 
         <Container className="relative z-10 text-center">
           <h2 className="cta-title font-display text-4xl sm:text-5xl md:text-6xl text-white/95 mb-6 leading-tight">
-            Begin your North Bengal story
+            Ready to showcase your routes?
           </h2>
           <p className="text-white/60 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-            Choose a route. Scroll through the journey. Book with a local partner.
+            Join PathSathi today. Login to activate your FREE beta plan and start connecting with travelers.
           </p>
-          <Link
-            href="#routes"
-            className="inline-flex items-center gap-3 px-8 py-4 border border-white/25 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-500"
-          >
-            View All Routes
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-white text-primary text-sm tracking-[0.15em] uppercase font-semibold rounded-full hover:bg-white/90 hover:shadow-xl transition-all duration-500"
+            >
+              Agency Login
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 px-8 py-4 border border-white/25 text-white text-sm tracking-[0.15em] uppercase font-medium rounded-full hover:bg-white/10 hover:border-white/40 transition-all duration-500"
+            >
+              Join Beta (Free)
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </Container>
       </section>
     </main>

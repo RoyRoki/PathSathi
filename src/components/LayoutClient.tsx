@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { SmoothScroll } from "@/components/SmoothScroll";
+import { GitHubPagesRedirect } from "@/components/GitHubPagesRedirect";
 
 export function LayoutClient({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -11,6 +12,7 @@ export function LayoutClient({ children }: { children: React.ReactNode }) {
 
     return (
         <body className="font-sans bg-background text-foreground antialiased min-h-screen flex flex-col noise-bg px-0">
+            <GitHubPagesRedirect />
             {/* <CustomCursor /> */}
             {!isAdminRoute && <Navbar />}
             <SmoothScroll>

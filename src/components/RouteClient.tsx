@@ -447,13 +447,13 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
               {/* Section Header */}
               <div className="text-center mb-16 space-y-4">
                 <span className="text-accent text-xs font-bold uppercase tracking-[0.3em]">
-                  Travel Partners
+                  Connect for Planning
                 </span>
                 <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
-                  Book This Route
+                  Choose Your Travel Agency
                 </h2>
                 <p className="text-white/60 max-w-lg mx-auto font-light">
-                  Verified agencies offering this route. Pick one to view packages and pricing.
+                  Select an agency to view their contact details. Reach out directly via WhatsApp, phone, or email to plan your journey.
                 </p>
               </div>
 

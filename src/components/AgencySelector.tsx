@@ -37,7 +37,7 @@ export function AgencySelector({ agencies, activeId, onSelect, className }: Agen
       <div className="flex items-center gap-2 pr-4 border-r border-white/10">
         <Users className="w-4 h-4 text-accent" />
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/60">
-          Curated Agencies
+          Available Agencies
         </span>
       </div>
       <div className="flex flex-wrap gap-2 max-w-[400px]">

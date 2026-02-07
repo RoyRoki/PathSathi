@@ -45,7 +45,7 @@ export function AgencyContactFooter({ agency }: AgencyContactFooterProps) {
                         </div>
 
                         <p className="text-slate-400 text-sm leading-relaxed mb-6">
-                            Proud partner of PathSathi. Contact us directly to book this exclusive journey or customize your travel experience.
+                            <strong className="text-white">Connect directly for route planning.</strong> Reach out via phone, email, or WhatsApp to customize this journey, discuss itineraries, and book your adventure.
                         </p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
