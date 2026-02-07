@@ -3,11 +3,12 @@
 const isGitHubPages = process.env.GITHUB_ACTIONS === 'true';
 
 const nextConfig = {
-  output: 'export',
+  // Only use static export for GitHub Pages, Vercel uses server-side rendering
+  ...(isGitHubPages && { output: 'export' }),
   basePath: isGitHubPages ? '/PathSathi' : '',
   assetPrefix: isGitHubPages ? '/PathSathi/' : '',
   images: {
-    unoptimized: true
+    unoptimized: isGitHubPages
   },
   trailingSlash: true,
   reactStrictMode: true,
