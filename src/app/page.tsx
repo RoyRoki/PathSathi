@@ -238,30 +238,30 @@ export default function Home() {
         </div>
 
         {/* Layer 3: Foreground Text */}
-        <div className="hero-foreground relative z-10 py-32 px-6 w-full">
+        <div className="hero-foreground relative z-10 py-20 px-6 w-full flex flex-col justify-center h-full">
           <Container>
             <div className="max-w-5xl mx-auto text-center">
-              {/* Title */}
+              {/* Title - Scaled down for mobile */}
               <h1
                 ref={titleRef}
-                className="mb-8 font-display text-5xl sm:text-7xl md:text-8xl lg:text-[100px] text-white leading-[1.05] drop-shadow-2xl tracking-tight"
+                className="mb-6 font-display text-4xl sm:text-7xl md:text-8xl lg:text-[100px] text-white leading-tight sm:leading-[1.05] drop-shadow-2xl tracking-tight"
                 style={{ perspective: '1000px', textShadow: '0 20px 40px rgba(0,0,0,0.5)' }}
               >
                 The Journey Begins<br />Before You Leave.
               </h1>
 
-              {/* Subtitle */}
-              <p className="hero-subtitle mb-12 max-w-2xl mx-auto text-xl md:text-2xl text-white/90 leading-relaxed font-light text-balance drop-shadow-lg">
+              {/* Subtitle - Adjusted spacing */}
+              <p className="hero-subtitle mb-8 sm:mb-12 max-w-2xl mx-auto text-lg sm:text-2xl text-white/90 leading-relaxed font-light text-balance drop-shadow-lg">
                 Experience your next adventure through an immersive 3D visual odyssey. Move through the mountains, from your screen.
               </p>
 
-              {/* Dual CTA */}
-              <div className="flex flex-col sm:flex-row gap-5 items-center justify-center">
+              {/* Dual CTA - Column on mobile, Row on larger */}
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 items-center justify-center">
                 <button
                   onClick={() => {
                     document.getElementById('routes')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="hero-cta will-change-transform group inline-flex items-center gap-3 px-10 py-5 bg-white text-primary text-sm tracking-[0.2em] uppercase font-bold rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-500"
+                  className="hero-cta will-change-transform group inline-flex items-center gap-3 px-8 py-4 sm:px-10 sm:py-5 bg-white text-primary text-xs sm:text-sm tracking-[0.2em] uppercase font-bold rounded-full hover:bg-white/90 hover:scale-105 transition-all duration-500"
                 >
                   Start Exploring
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
