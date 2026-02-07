@@ -10,7 +10,13 @@ const nextConfig = {
     unoptimized: true
   },
   trailingSlash: true,
-  reactStrictMode: true
+  reactStrictMode: true,
+
+  // Disable webpack cache for stability during development
+  webpack: (config) => {
+    config.cache = false;
+    return config;
+  },
 };
 
 export default nextConfig;

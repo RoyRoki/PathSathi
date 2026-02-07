@@ -3,7 +3,7 @@
 import { AgencyAuth } from "@/components/AgencyAuth";
 import Image from "next/image";
 import Link from "next/link";
-import { Mountain, ArrowLeft, Sparkles, Award, MapPin } from "lucide-react";
+import { ArrowLeft, Sparkles, Award, MapPin } from "lucide-react";
 import { gsap, useGSAP } from "@/lib/gsap";
 import { getAssetPath } from "@/lib/utils";
 import { useRef } from "react";
@@ -80,7 +80,7 @@ export default function SignupPage() {
           </div>
 
           <div className="bg-white/50 dark:bg-black/20 backdrop-blur-3xl p-8 rounded-[2rem] border border-border/50 shadow-2xl relative">
-            <AgencyAuth mode="signup" />
+            <AgencyAuth />
           </div>
 
 

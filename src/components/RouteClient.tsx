@@ -18,12 +18,13 @@ import { getAssetPath } from "@/lib/utils";
 import type { Agency } from "@/lib/types";
 import { gsap, useGSAP } from "@/lib/gsap";
 // import { initSmoothScroll } from "@/lib/lenis"; // Temporarily disabled
-import { MapPin, Clock, Home, ArrowLeft, Share2 } from "lucide-react";
+import { MapPin, Clock, Home } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { FloatingStats } from "./FloatingStats";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { AgencyContactFooter } from "@/components/AgencyContactFooter";
+import { FloatingWhatsApp } from "@/components/FloatingWhatsApp";
 
 type RouteData = {
   id: string;
@@ -38,6 +39,8 @@ type RouteData = {
 };
 
 type RouteConfig = {
+  totalFrames?: number;
+  desktopTotalFrames?: number;
   pointsOfInterest: POI[];
 };
 
@@ -54,6 +57,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   const [loading, setLoading] = useState(true);
   const [routeConfig, setRouteConfig] = useState<RouteConfig | null>(null);
 
+  const [isMobile, setIsMobile] = useState(false);
+
   // Read tid from URL client-side (for static export compatibility)
   useEffect(() => {
     if (typeof window !== 'undefined' && !initialTid) {
@@ -65,17 +70,16 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     }
   }, [initialTid]);
 
+  // Handle window resize for mobile detection
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-
-  // Initialize Lenis smooth scrolling - TEMPORARILY DISABLED
-  // useEffect(() => {
-  //   const lenis = initSmoothScroll();
-  //
-  //   return () => {
-  //     lenis.destroy();
-  //   };
-  // }, []);
 
   useEffect(() => {
     const loadRoute = async () => {
@@ -109,14 +113,24 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     loadRoute().catch(() => {
       setLoading(false);
     });
+  }, [slug]);
 
-    // Load route configuration
+  // Load route configuration dynamically based on device
+  useEffect(() => {
     const loadConfig = async () => {
+      const devicePath = isMobile ? "mobile" : "desktop";
       try {
-        const response = await fetch(getAssetPath(`/routes/${slug}/meta/config.json`));
+        const response = await fetch(getAssetPath(`/routes/${slug}/${devicePath}/meta/config.json`));
         if (response.ok) {
           const config = await response.json();
           setRouteConfig(config);
+        } else {
+          // Fallback to legacy path if new path doesn't exist yet
+          const fallbackResponse = await fetch(getAssetPath(`/routes/${slug}/meta/config.json`));
+          if (fallbackResponse.ok) {
+            const config = await fallbackResponse.json();
+            setRouteConfig(config);
+          }
         }
       } catch (error) {
         console.warn("Could not load route config", error);
@@ -124,7 +138,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     };
 
     loadConfig();
-  }, [slug]);
+  }, [slug, isMobile]);
 
   useGSAP(() => {
     if (!route) return;
@@ -189,49 +203,72 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
         return;
       }
 
+      console.log(`[DEBUG] Loading agencies for route: ${route.id}`);
+
+      // Fetch ALL purchases for this route to debug status
       const purchaseSnapshot = await getDocs(
         query(
           collection(firestore, "routePurchases"),
-          where("route_id", "==", route.id),
-          where("status", "==", "approved")
+          where("route_id", "==", route.id)
         )
       );
 
-      if (purchaseSnapshot.empty) {
-        setAgency(undefined);
-        setAgencyList([]);
-        return;
+      // Filter for approved only
+      const approvedDocs = purchaseSnapshot.docs.filter(d => d.data().status === 'approved');
+
+      if (approvedDocs.length === 0) {
+        // Fallback: If we have a direct TID, try to load that agency anyway for debugging/testing
+        if (!activeAgencyId) {
+          setAgency(undefined);
+          setAgencyList([]);
+          return;
+        }
       }
 
       const agencyIds = Array.from(
         new Set(
-          purchaseSnapshot.docs.map(
+          approvedDocs.map(
             (docItem) => docItem.data().agency_uid as string
           )
         )
       );
 
+      // If activeAgencyId is not in the approved list, add it to checking list to see why it failed
+      if (activeAgencyId && !agencyIds.includes(activeAgencyId)) {
+        agencyIds.push(activeAgencyId);
+      }
+
       const agencies = await Promise.all(
         agencyIds.map(async (agencyId) => {
           const agencyRef = doc(firestore, "agencies", agencyId);
           const agencySnapshot = await getDoc(agencyRef);
+
           if (!agencySnapshot.exists()) return null;
-          const agencyData = agencySnapshot.data() as any;
-          if (!agencyData.is_verified) return null;
+
+          const agencyData = agencySnapshot.data();
+
+          if (!agencyData.is_verified) {
+            // return null; // UNCOMMENT TO ENFORCE VERIFICATION
+          }
+
           const trialExpiry = agencyData.trial_expiry?.toDate?.();
-          if (trialExpiry && trialExpiry.getTime() < Date.now()) return null;
+          if (trialExpiry && trialExpiry.getTime() < Date.now()) {
+            // return null; // UNCOMMENT TO ENFORCE EXPIRY
+          }
+
           return {
             id: agencyId,
             name: agencyData.name,
-            phone: agencyData.contact_no,
+            contactNo: agencyData.contact_no,
             email: agencyData.email,
             website: agencyData.website,
             address: agencyData.address,
             isVerified: agencyData.is_verified,
             whatsapp: agencyData.whatsapp,
+            logoUrl: agencyData.logo_url, // Map snake_case to camelCase
             status: agencyData.status,
-            trialStart: agencyData.trial_start?.toDate?.()?.toISOString(),
-            trialExpiry: agencyData.trial_expiry?.toDate?.()?.toISOString()
+            trialStart: agencyData.trial_start?.toDate?.(),
+            trialExpiry: agencyData.trial_expiry?.toDate?.()
           } as Agency;
         })
       );
@@ -248,7 +285,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
       }
     };
 
-    loadAgencies().catch(() => {
+    loadAgencies().catch((err) => {
+      console.error("Error loading agencies:", err);
       setAgency(undefined);
       setAgencyList([]);
     });
@@ -270,6 +308,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
       window.history.replaceState({}, "", url.toString());
     }
   };
+
+
 
   if (!route && loading) {
     return (
@@ -324,11 +364,25 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
           </div>
         </div>
 
-        {/* Home Button */}
+        {/* Home Button / Agency Logo */}
         <div className="absolute top-8 left-8 z-30">
           <Link href="/" className="group flex items-center justify-center text-white/80 hover:text-white transition-all duration-500">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 transition-all duration-500 group-hover:bg-white/20 group-hover:border-white/40 group-hover:shadow-lg group-hover:shadow-accent/20 group-hover:scale-105">
-              <Home className="h-5 w-5 transition-transform duration-500 group-hover:scale-110" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 transition-all duration-500 group-hover:bg-white/20 group-hover:border-white/40 group-hover:shadow-lg group-hover:shadow-accent/20 group-hover:scale-105 overflow-hidden">
+              {activeAgencyId && agency?.logoUrl ? (
+                <Image
+                  src={agency.logoUrl}
+                  alt={agency.name}
+                  width={48}
+                  height={48}
+                  className="h-full w-full object-cover"
+                />
+              ) : activeAgencyId && agency ? (
+                <div className="flex h-full w-full items-center justify-center bg-primary/20 text-primary font-bold text-lg">
+                  {agency.name[0]}
+                </div>
+              ) : (
+                <Home className="h-5 w-5 transition-transform duration-500 group-hover:scale-110" />
+              )}
             </div>
           </Link>
         </div>
@@ -374,43 +428,59 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
         }>
           <JourneyPlayer
             assetFolder={route.asset_folder}
-            mobileFrames={route.total_frames || 1828}
-            desktopFrames={route.desktop_total_frames || route.total_frames || 1920}
+            mobileFrames={routeConfig?.totalFrames || 1828}
+            desktopFrames={routeConfig?.totalFrames || 1920}
             pointsOfInterest={routeConfig?.pointsOfInterest}
-          />
+            isMobile={isMobile}
+          >
+            {activeAgencyId && agency && <AgencyContactFooter agency={agency} />}
+          </JourneyPlayer>
         </ErrorBoundary>
       </section>
 
-      {/* Partner / Agency Section */}
-      <section className="relative z-10 bg-slate-950 py-24 px-6 border-t border-white/10">
-        <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
-          {/* Section Header */}
-          <div className="text-center mb-16 space-y-4">
-            <span className="text-accent text-xs font-bold uppercase tracking-[0.3em]">
-              Travel Partners
-            </span>
-            <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
-              Book This Route
-            </h2>
-            <p className="text-white/60 max-w-lg mx-auto font-light">
-              Verified agencies offering this route. Pick one to view packages and pricing.
-            </p>
+      {/* Partner / Agency Section - HIDDEN if Agency Selected (now in Player) */}
+      {!activeAgencyId && (
+        <section className="relative z-10 bg-slate-950 py-24 px-6 border-t border-white/10">
+          <div className="max-w-7xl mx-auto flex flex-col items-center justify-center min-h-[50vh]">
+            {/* Default view: Show "Book This Route" if no agency is selected via URL */}
+            <>
+              {/* Section Header */}
+              <div className="text-center mb-16 space-y-4">
+                <span className="text-accent text-xs font-bold uppercase tracking-[0.3em]">
+                  Travel Partners
+                </span>
+                <h2 className="font-display text-4xl md:text-5xl font-light text-white tracking-wide">
+                  Book This Route
+                </h2>
+                <p className="text-white/60 max-w-lg mx-auto font-light">
+                  Verified agencies offering this route. Pick one to view packages and pricing.
+                </p>
+              </div>
+
+              <AgencySelector
+                agencies={agencyList}
+                activeId={activeAgencyId}
+                onSelect={handleAgencySelect}
+                className="relative bottom-auto left-auto translate-x-0 flex flex-wrap justify-center gap-4 py-3 px-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md mb-12"
+              />
+
+              <AgencySheet
+                agency={agency}
+                hasAgencies={agencyList.length > 0}
+                className="relative bottom-auto left-auto translate-x-0 w-full max-w-3xl mx-auto"
+              />
+            </>
           </div>
+        </section>
+      )}
 
-          <AgencySelector
-            agencies={agencyList}
-            activeId={activeAgencyId}
-            onSelect={handleAgencySelect}
-            className="relative bottom-auto left-auto translate-x-0 flex flex-wrap justify-center gap-4 py-3 px-6 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md mb-12"
-          />
-
-          <AgencySheet
-            agency={agency}
-            hasAgencies={agencyList.length > 0}
-            className="relative bottom-auto left-auto translate-x-0 w-full max-w-3xl mx-auto"
-          />
-        </div>
-      </section>
+      {/* Floating WhatsApp Button - Only show when agency is active */}
+      {agency?.whatsapp && (
+        <FloatingWhatsApp
+          phoneNumber={agency.whatsapp}
+          agencyName={agency.name}
+        />
+      )}
 
     </main>
   );

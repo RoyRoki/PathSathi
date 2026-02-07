@@ -11,6 +11,7 @@ import {
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   runTransaction,
@@ -20,10 +21,11 @@ import {
   updateDoc,
   where,
   increment,
-  deleteDoc
+  deleteDoc,
+  deleteField
 } from "firebase/firestore";
-import Link from "next/link";
 import Image from "next/image";
+import { Modal } from "@/components/ui/Modal";
 import { getFirebaseAuth, getFirestoreDb } from "@/lib/firebase";
 import { getAssetPath } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
@@ -31,6 +33,7 @@ import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Alert } from "@/components/ui/Alert";
+import { AgenciesTab } from "@/components/admin/AgenciesTab";
 import {
   MapPin,
   ShieldAlert,
@@ -39,21 +42,17 @@ import {
   Bell,
   Settings,
   LogOut,
-  CheckCircle2,
   XCircle,
   Plus,
-  Search,
   LayoutDashboard,
   Activity,
-  ArrowRight,
-  ChevronDown,
   Mail,
   Phone,
   MessageCircle,
-  Globe
+  Globe,
+  Eye
 } from "lucide-react";
 
-const trialDays = 7;
 
 type Tab = "overview" | "agencies" | "requests" | "routes";
 
@@ -63,26 +62,17 @@ export default function AdminPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [agencies, setAgencies] = useState<any[]>([]);
+  const [allAgencies, setAllAgencies] = useState<any[]>([]);
+  const [agencyRoutes, setAgencyRoutes] = useState<Record<string, any[]>>({});
   const [requests, setRequests] = useState<any[]>([]);
-  const [expandedAgencies, setExpandedAgencies] = useState<Set<string>>(new Set());
   const [agencySearchQuery, setAgencySearchQuery] = useState("");
-
-  const toggleAgencyExpand = (id: string) => {
-    const newExpanded = new Set(expandedAgencies);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
-    } else {
-      newExpanded.add(id);
-    }
-    setExpandedAgencies(newExpanded);
-  };
+  const [selectedAgency, setSelectedAgency] = useState<any | null>(null);
   const [allRoutes, setAllRoutes] = useState<any[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [messageType, setMessageType] = useState<"success" | "error" | "info">("info");
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [showRouteModal, setShowRouteModal] = useState(false);
-  const [availableFolders, setAvailableFolders] = useState<string[]>([]);
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
 
   const [routeForm, setRouteForm] = useState({
@@ -118,7 +108,16 @@ export default function AdminPage() {
       setIsAdmin(adminClaim);
       setAuthChecked(true);
       if (adminClaim) {
-        await loadAllData();
+        try {
+          await loadAllData();
+        } catch (error: any) {
+          console.error("Data loading failed:", error);
+          if (error.code === 'permission-denied') {
+            showMessage("Permission denied. Ensure your account is an admin and rules are deployed.", "error");
+          } else {
+            showMessage(`Failed to load data: ${error.message}`, "error");
+          }
+        }
       }
     });
 
@@ -126,17 +125,7 @@ export default function AdminPage() {
   }, []);
 
   const loadAllData = async () => {
-    await Promise.all([loadPending(), loadAllRoutes(), loadFolders()]);
-  };
-
-  const loadFolders = async () => {
-    try {
-      const res = await fetch('/api/route-folders');
-      const data = await res.json();
-      if (data.folders) setAvailableFolders(data.folders);
-    } catch (e) {
-      console.error("Failed to load folders", e);
-    }
+    await Promise.all([loadPending(), loadAllAgencies(), loadAllRoutes()]);
   };
 
   const loadPending = async () => {
@@ -162,6 +151,107 @@ export default function AdminPage() {
     setAllRoutes(routesSnapshot.docs.map((docItem) => ({ id: docItem.id, ...docItem.data() })));
   };
 
+  const loadAllAgencies = async () => {
+    const firestore = getFirestoreDb();
+    if (!firestore) return;
+
+    try {
+      const agenciesSnapshot = await getDocs(collection(firestore, "agencies"));
+      const agenciesData = agenciesSnapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data()
+      }));
+      setAllAgencies(agenciesData);
+
+      // Load routes for each agency
+      const routesMap: Record<string, any[]> = {};
+      await Promise.all(
+        agenciesData.map(async (agency) => {
+          const routes = await loadAgencyRoutes(agency);
+          routesMap[agency.id] = routes;
+        })
+      );
+      setAgencyRoutes(routesMap);
+    } catch (error: any) {
+      console.error("Failed to load all agencies:", error);
+      if (error.code === 'permission-denied') {
+        // This confirms the user is logged in but rules rejected the read
+        // Likely missing admin claim or rules not deployed
+        throw error; // Re-throw to be caught by the main loader
+      }
+    }
+  };
+
+  const loadAgencyRoutes = async (agency: any): Promise<any[]> => {
+    const firestore = getFirestoreDb();
+    if (!firestore) return [];
+
+    try {
+      // 1. Fetch from subcollection (Access Control List - existing logic)
+      const routesSnapshot = await getDocs(
+        collection(firestore, "agencies", agency.id, "routes")
+      );
+
+      const aclRoutes = routesSnapshot.docs.map((docItem) => {
+        const data = docItem.data();
+        return {
+          id: docItem.id,
+          ...data,
+          route_id: data.route_id || docItem.id, // Ensure route_id is present
+          _source: 'acl'
+        };
+      });
+
+      // 2. Fetch from routePurchases (Billing/Ownership source of truth)
+      // This ensures we see routes even if the ACL write failed previously
+      const purchasesSnapshot = await getDocs(
+        query(
+          collection(firestore, "routePurchases"),
+          where("agency_uid", "==", agency.id),
+          where("status", "==", "approved")
+        )
+      );
+
+      const purchasedRoutes = purchasesSnapshot.docs.map((docItem) => {
+        const data = docItem.data();
+        return {
+          id: data.route_id, // Normalize ID to route_id
+          route_id: data.route_id,
+          trial_expiry: null, // Purchase record might not have expiry, usually in ACL
+          trial_start: null,
+          ...data,
+          _source: 'purchase'
+        };
+      });
+
+      // 3. Merge: Prefer ACL data (has expiry) over Purchase data, but include Purchase if missing in ACL
+      const routeMap = new Map();
+
+      // Add purchases first
+      purchasedRoutes.forEach(r => routeMap.set(r.route_id, r));
+
+      // Overwrite with ACL data (which is more specific for access details)
+      aclRoutes.forEach((r: any) => {
+        // ACL docs usually use route_id as document ID, checking both just in case
+        const key = r.route_id || r.id;
+        routeMap.set(key, { ...routeMap.get(key), ...r });
+      });
+
+      const combinedRoutes = Array.from(routeMap.values());
+
+      console.log(`[DEBUG] Agency ${agency.email}: ACL Docs: ${aclRoutes.length}, Purchases: ${purchasedRoutes.length} -> Combined: ${combinedRoutes.length}`);
+
+      return combinedRoutes;
+
+    } catch (error: any) {
+      console.error(`Failed to load routes for agency ${agency.email} (${agency.id}):`, error);
+      if (error.code === 'permission-denied') {
+        showMessage(`Permission denied loading routes for ${agency.email}. Check Rules.`, "error");
+      }
+      return [];
+    }
+  };
+
   const showMessage = (msg: string, type: "success" | "error" | "info" = "info") => {
     setMessage(msg);
     setMessageType(type);
@@ -183,50 +273,6 @@ export default function AdminPage() {
     }
   };
 
-  const approveAgency = async (agencyId: string) => {
-    setLoadingStates(prev => ({ ...prev, [`approve-agency-${agencyId}`]: true }));
-    try {
-      const firestore = getFirestoreDb();
-      if (!firestore) return;
-
-      // Set 7-day trial period from now
-      const now = new Date();
-      const expiry = new Date(now.getTime() + trialDays * 24 * 60 * 60 * 1000);
-
-      await updateDoc(doc(firestore, "agencies", agencyId), {
-        is_verified: true,
-        status: "verified",
-        trial_start: Timestamp.fromDate(new Date()),
-        trial_expiry: Timestamp.fromDate(expiry)
-      });
-
-      await loadPending();
-      showMessage("Agency approved successfully!", "success");
-    } catch (error) {
-      showMessage("Failed to approve agency.", "error");
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [`approve-agency-${agencyId}`]: false }));
-    }
-  };
-
-  const denyAgency = async (agencyId: string) => {
-    setLoadingStates(prev => ({ ...prev, [`deny-agency-${agencyId}`]: true }));
-    try {
-      const firestore = getFirestoreDb();
-      if (!firestore) return;
-
-      await updateDoc(doc(firestore, "agencies", agencyId), {
-        status: "denied"
-      });
-
-      await loadPending();
-      showMessage("Agency denied.", "info");
-    } catch (error) {
-      showMessage("Failed to deny agency.", "error");
-    } finally {
-      setLoadingStates(prev => ({ ...prev, [`deny-agency-${agencyId}`]: false }));
-    }
-  };
 
   const approveRequest = async (requestId: string, routeId: string, agencyUid: string) => {
     setLoadingStates(prev => ({ ...prev, [`approve-request-${requestId}`]: true }));
@@ -264,6 +310,17 @@ export default function AdminPage() {
       await runTransaction(firestore, async (transaction) => {
         const routeRef = doc(firestore, "routes", routeId);
         const routeSnap = await transaction.get(routeRef);
+
+        if (!routeSnap.exists()) {
+          console.error(`Route ${routeId} does not exist`);
+          // We don't throw here to avoid failing the whole operation if just the route stats update fails
+          // But for strict data integrity we might want to. 
+          // For now, let's just return to allow the approval to proceed partially or log it.
+          // Actually, let's treat it as non-fatal or create the route if needed? 
+          // Better: throw a specific error to catch below.
+          throw new Error(`Route document '${routeId}' not found. Cannot update stats.`);
+        }
+
         const currentFeatured = routeSnap.data()?.featured_agency_uid;
         transaction.update(routeRef, {
           sponsor_count: increment(1),
@@ -273,10 +330,55 @@ export default function AdminPage() {
 
       await loadAllData();
       showMessage("Request approved successfully!", "success");
-    } catch (error) {
-      showMessage("Failed to approve request.", "error");
+    } catch (error: any) {
+      console.error("Failed to approve request", error);
+      showMessage(`Approval failed: ${error.message}`, "error");
     } finally {
       setLoadingStates(prev => ({ ...prev, [`approve-request-${requestId}`]: false }));
+    }
+  };
+
+  const revokeRoute = async (agencyUid: string, routeId: string) => {
+    const loadingKey = `revoke-${agencyUid}-${routeId}`;
+    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
+
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+
+      // 1. Delete the route access document
+      await deleteDoc(doc(firestore, "agencies", agencyUid, "routes", routeId));
+
+      // 2. Find and delete the purchase request to allow re-requesting
+      // The ID is deterministic: `agencyUid_routeId`
+      const purchaseId = `${agencyUid}_${routeId}`;
+      await deleteDoc(doc(firestore, "routePurchases", purchaseId));
+
+      // 3. Decrement sponsor count
+      await runTransaction(firestore, async (transaction) => {
+        const routeRef = doc(firestore, "routes", routeId);
+        const routeSnap = await transaction.get(routeRef);
+        if (routeSnap.exists()) {
+          transaction.update(routeRef, {
+            sponsor_count: increment(-1)
+          });
+        }
+      });
+
+      // 4. Clear trial info from agency
+      await updateDoc(doc(firestore, "agencies", agencyUid), {
+        trial_start: deleteField(),
+        trial_expiry: deleteField(),
+        updated_at: serverTimestamp()
+      });
+
+      await loadAllData();
+      showMessage("Route access revoked & trial reset successfully.", "success");
+    } catch (error: any) {
+      console.error("Failed to revoke access:", error);
+      showMessage(`Revocation failed: ${error.message}`, "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
     }
   };
 
@@ -299,6 +401,37 @@ export default function AdminPage() {
       setLoadingStates(prev => ({ ...prev, [`deny-request-${requestId}`]: false }));
     }
   };
+
+  const toggleAgencyStatus = async (agencyId: string, currentStatus: string) => {
+    const loadingKey = `toggle-agency-${agencyId}`;
+    setLoadingStates(prev => ({ ...prev, [loadingKey]: true }));
+    try {
+      const firestore = getFirestoreDb();
+      if (!firestore) return;
+
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      const updates: any = {
+        status: newStatus,
+        updated_at: serverTimestamp()
+      };
+
+      // If we are enabling (activating) the agency, also mark them as verified
+      if (newStatus === "active") {
+        updates.is_verified = true;
+      }
+
+      await updateDoc(doc(firestore, "agencies", agencyId), updates);
+
+      await loadAllAgencies();
+      showMessage(`Agency ${newStatus === "active" ? "activated & verified" : "deactivated"} successfully!`, "success");
+    } catch (error: any) {
+      console.error("Toggle agency status error:", error);
+      showMessage(`Failed to update status: ${error.code || error.message}`, "error");
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [loadingKey]: false }));
+    }
+  };
+
 
   const deleteRoute = async (routeId: string) => {
     if (!window.confirm("Are you sure you want to delete this route? This cannot be undone.")) return;
@@ -457,7 +590,7 @@ export default function AdminPage() {
         desktop_total_frames: 4000,
         distance_km: 65,
         duration_hours: 3,
-        hero_image: "/images/darjeeling-hero.jpg",
+        hero_image: "/images/darjeeling_hero_bg_1770289408859.png",
         status: "active",
         sponsor_count: 0,
         created_at: serverTimestamp()
@@ -715,9 +848,18 @@ export default function AdminPage() {
               variant="ghost"
               size="icon"
               className="rounded-xl w-11 h-11 hover:bg-destructive/10 hover:text-destructive transition-all"
-              onClick={() => {
-                const auth = getFirebaseAuth();
-                if (auth) signOut(auth);
+              onClick={async () => {
+                try {
+                  const auth = getFirebaseAuth();
+                  if (auth) {
+                    await signOut(auth);
+                    setIsAdmin(false);
+                    setAuthChecked(true);
+                    // We can also reload the page to be sure, but state update should be enough
+                  }
+                } catch (error) {
+                  console.error("Logout failed", error);
+                }
               }}
             >
               <LogOut className="w-5 h-5" />
@@ -819,166 +961,17 @@ export default function AdminPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                 >
-                  <Card className="rounded-[3rem] p-12 border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl shadow-3xl">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-                      <h2 className="text-4xl font-black tracking-tight">Agency Authorization</h2>
-                      <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                        <input
-                          value={agencySearchQuery}
-                          onChange={(e) => setAgencySearchQuery(e.target.value)}
-                          className="pl-11 pr-6 py-4 rounded-2xl bg-white/10 border border-white/10 text-sm focus:ring-2 focus:ring-primary/20 transition-all w-full md:w-64 placeholder:text-muted-foreground/50"
-                          placeholder="Search by name, email, or contact..."
-                        />
-                      </div>
-                    </div>
-
-                    {(() => {
-                      const filteredAgencies = agencies.filter(agency =>
-                        agency.name?.toLowerCase().includes(agencySearchQuery.toLowerCase()) ||
-                        agency.email?.toLowerCase().includes(agencySearchQuery.toLowerCase()) ||
-                        agency.contact_no?.includes(agencySearchQuery) ||
-                        agency.whatsapp?.includes(agencySearchQuery)
-                      );
-
-                      return filteredAgencies.length === 0 ? (
-                        <div className="text-center py-24 bg-white/5 rounded-[3rem] border-2 border-dashed border-white/10">
-                          {agencySearchQuery ? (
-                            <>
-                              <Search className="w-16 h-16 mx-auto mb-6 text-primary/30" />
-                              <p className="text-muted-foreground text-lg font-light italic">No agencies match your search criteria.</p>
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="w-16 h-16 mx-auto mb-6 text-primary/30" />
-                              <p className="text-muted-foreground text-lg font-light italic">The backlog is clear. No agencies awaiting review.</p>
-                            </>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="grid gap-6">
-                          {filteredAgencies.map((agency) => (
-                            <div key={agency.id} className="group relative overflow-hidden rounded-[2.5rem] p-8 bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-500 hover:shadow-2xl">
-                              <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                              {/* Header with Logo */}
-                              <div className="flex items-start gap-6 mb-6">
-                                {agency.logo_url ? (
-                                  <div className="w-20 h-20 rounded-2xl bg-white p-2 border border-white/20 shadow-lg shrink-0 overflow-hidden">
-                                    <Image
-                                      src={agency.logo_url}
-                                      alt="Logo"
-                                      width={80}
-                                      height={80}
-                                      className="w-full h-full object-contain"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-                                    <span className="text-3xl font-black text-primary">{agency.name?.[0] || 'A'}</span>
-                                  </div>
-                                )}
-
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-black text-2xl tracking-tight leading-none mb-2">{agency.name || agency.email}</h3>
-                                  {agency.address && (
-                                    <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                                      <MapPin className="w-3.5 h-3.5 shrink-0" />
-                                      <span className="line-clamp-1">{agency.address}</span>
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Divider */}
-                              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
-
-                              {/* Contact Grid */}
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div className="flex items-start gap-3">
-                                  <Mail className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Email</p>
-                                    <p className="text-sm font-medium truncate">{agency.email}</p>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-start gap-3">
-                                  <Phone className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Phone</p>
-                                    <p className="text-sm font-medium">{agency.contact_no || 'Not provided'}</p>
-                                  </div>
-                                </div>
-
-                                {agency.whatsapp && (
-                                  <div className="flex items-start gap-3">
-                                    <MessageCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">WhatsApp</p>
-                                      <p className="text-sm font-medium">{agency.whatsapp}</p>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {agency.website && (
-                                  <div className="flex items-start gap-3">
-                                    <Globe className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                                    <div className="min-w-0 flex-1">
-                                      <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 mb-1">Website</p>
-                                      <a
-                                        href={agency.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-sm font-medium text-blue-500 hover:underline truncate block"
-                                      >
-                                        {agency.website.replace(/^https?:\/\//, '')}
-                                      </a>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Divider */}
-                              <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
-
-                              {/* Meta Info */}
-                              {agency.uid && (
-                                <div className="mb-6">
-                                  <p className="text-xs font-mono text-muted-foreground/40">
-                                    ID: {agency.uid.slice(0, 16)}...
-                                  </p>
-                                </div>
-                              )}
-
-                              {/* Actions */}
-                              <div className="flex gap-4">
-                                <Button
-                                  size="lg"
-                                  className="flex-1 rounded-2xl h-14 font-black shadow-xl"
-                                  onClick={() => approveAgency(agency.id)}
-                                  isLoading={loadingStates[`approve-agency-${agency.id}`]}
-                                >
-                                  <CheckCircle2 className="mr-2 w-5 h-5" />
-                                  Authorize
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="lg"
-                                  className="flex-1 rounded-2xl h-14 font-bold hover:bg-destructive/10 hover:text-destructive transition-colors"
-                                  onClick={() => denyAgency(agency.id)}
-                                  isLoading={loadingStates[`deny-agency-${agency.id}`]}
-                                >
-                                  <XCircle className="mr-2 w-5 h-5" />
-                                  Dismiss
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </Card>
+                  <AgenciesTab
+                    allAgencies={allAgencies}
+                    agencyRoutes={agencyRoutes}
+                    agencySearchQuery={agencySearchQuery}
+                    setAgencySearchQuery={setAgencySearchQuery}
+                    toggleAgencyStatus={toggleAgencyStatus}
+                    revokeRoute={revokeRoute}
+                    loadingStates={loadingStates}
+                    requests={requests}
+                    approveRequest={approveRequest}
+                  />
                 </motion.div>
               )}
 
@@ -1010,7 +1003,33 @@ export default function AdminPage() {
                                   Agency ID: {request.agency_uid}
                                 </div>
                               </div>
-                              <div className="flex gap-4">
+                              <div className="flex flex-wrap gap-4 justify-end">
+                                <Button
+                                  size="lg"
+                                  variant="outline"
+                                  className="rounded-2xl h-14 px-10 font-black shadow-none border border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 transition-colors"
+                                  onClick={async () => {
+                                    let agency = agencies.find(a => a.id === request.agency_uid);
+                                    if (!agency) {
+                                      try {
+                                        const firestore = getFirestoreDb();
+                                        if (firestore) {
+                                          const docSnap = await getDoc(doc(firestore, "agencies", request.agency_uid));
+                                          if (docSnap.exists()) {
+                                            // @ts-ignore
+                                            agency = { id: docSnap.id, ...docSnap.data() };
+                                          }
+                                        }
+                                      } catch (error) {
+                                        console.error("Failed to fetch agency details", error);
+                                      }
+                                    }
+                                    if (agency) setSelectedAgency(agency);
+                                  }}
+                                >
+                                  <Eye className="mr-2 w-5 h-5" />
+                                  View Agency
+                                </Button>
                                 <Button size="lg" className="rounded-2xl h-14 px-10 font-black shadow-xl" onClick={() => approveRequest(request.id, request.route_id, request.agency_uid)} isLoading={loadingStates[`approve-request-${request.id}`]}>
                                   Grant Access
                                 </Button>
@@ -1062,10 +1081,10 @@ export default function AdminPage() {
 
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {allRoutes.map((route) => {
-                      const isValid = availableFolders.includes(route.path_slug);
+                      const isValid = true; // Feature disabled: availableFolders.includes(route.path_slug);
                       const isActive = route.status === "active";
                       return (
-                        <Card key={route.id} className={`rounded-[2.5rem] border ${isValid ? 'border-white/10' : 'border-red-500/50'} bg-white/20 dark:bg-black/40 backdrop-blur-3xl p-8 hover:shadow-2xl transition-all duration-500 group relative overflow-hidden`}>
+                        <Card key={route.id} className={`rounded-[2.5rem] border border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-3xl p-8 hover:shadow-2xl transition-all duration-500 group relative overflow-hidden`}>
                           <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-primary/10 transition-colors" />
                           <div className="absolute top-4 right-4 z-10 flex gap-2">
                             {!isValid && (
@@ -1178,23 +1197,16 @@ export default function AdminPage() {
                     ) : (
                       <div className="space-y-2">
                         <label className="text-[10px] font-black uppercase tracking-[0.2em] ml-1 opacity-60">Route Folder (Slug)</label>
-                        <select
-                          value={routeForm.path_slug}
+                        <Input
+                          id="asset_folder"
+                          value={routeForm.asset_folder}
                           onChange={(e) => {
-                            const slug = e.target.value;
-                            setRouteForm({
-                              ...routeForm,
-                              path_slug: slug,
-                              asset_folder: slug
-                            });
+                            const val = e.target.value;
+                            setRouteForm({ ...routeForm, asset_folder: val, path_slug: val });
                           }}
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 px-4 focus:bg-white/10 transition-all font-mono appearance-none"
-                        >
-                          <option value="" className="bg-zinc-900">Select Folder...</option>
-                          {availableFolders.map(folder => (
-                            <option key={folder} value={folder} className="bg-zinc-900">{folder}</option>
-                          ))}
-                        </select>
+                          className="bg-zinc-900/50 border-white/10 text-white placeholder:text-white/20"
+                          placeholder="e.g. siliguri-darjeeling"
+                        />
                         <div className="text-xs text-muted-foreground ml-1">
                           Select a folder from <code>public/routes</code>
                         </div>
@@ -1289,6 +1301,100 @@ export default function AdminPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Agency Details Modal */}
+      <Modal
+        isOpen={!!selectedAgency}
+        onClose={() => setSelectedAgency(null)}
+        title="Agency Dossier"
+        className="bg-white/90 dark:bg-zinc-900/95 backdrop-blur-3xl border border-white/10"
+      >
+        {selectedAgency && (
+          <div className="space-y-8">
+            <div className="flex items-start gap-6">
+              {selectedAgency.logo_url ? (
+                <div className="w-24 h-24 rounded-3xl bg-white p-2 border border-white/20 shadow-xl shrink-0 overflow-hidden">
+                  <Image
+                    src={selectedAgency.logo_url}
+                    alt="Logo"
+                    width={96}
+                    height={96}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-4xl font-black text-primary">{selectedAgency.name?.[0] || 'A'}</span>
+                </div>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 uppercase tracking-widest text-[10px] font-black px-3 py-1">
+                    {selectedAgency.is_verified ? 'Verified Partner' : 'Pending Verification'}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground font-mono">ID: {selectedAgency.uid?.slice(0, 8)}</span>
+                </div>
+                <h2 className="text-3xl font-black tracking-tight leading-none mb-3">{selectedAgency.name || selectedAgency.email}</h2>
+                {selectedAgency.address && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <MapPin className="w-4 h-4 shrink-0 text-primary/70" />
+                    <span>{selectedAgency.address}</span>
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                <Mail className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">Email Address</p>
+                  <p className="font-medium text-sm">{selectedAgency.email}</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                <Phone className="w-5 h-5 text-primary mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">Contact Number</p>
+                  <p className="font-medium text-sm">{selectedAgency.contact_no || 'Not provided'}</p>
+                </div>
+              </div>
+              {selectedAgency.whatsapp && (
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                  <MessageCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">WhatsApp</p>
+                    <p className="font-medium text-sm">{selectedAgency.whatsapp}</p>
+                  </div>
+                </div>
+              )}
+              {selectedAgency.website && (
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                  <Globe className="w-5 h-5 text-blue-500 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">Website</p>
+                    <a href={selectedAgency.website} target="_blank" rel="noopener noreferrer" className="font-medium text-sm hover:underline hover:text-blue-400 truncate block max-w-[200px]">
+                      {selectedAgency.website.replace(/^https?:\/\//, '')}
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-4 pt-4 border-t border-white/10">
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex-1 h-14 rounded-2xl px-6 font-bold border-primary/20 hover:bg-primary/5 text-primary"
+                onClick={() => setSelectedAgency(null)}
+              >
+                Close View
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Message Notifications */}
       <AnimatePresence>

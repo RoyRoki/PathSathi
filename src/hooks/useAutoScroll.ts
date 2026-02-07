@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Play, Pause, SkipForward } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 import type { POI } from "@/components/POIMarker";
 
@@ -80,13 +79,13 @@ export function useAutoScroll({
         });
 
         // Sort POIs by start time
-        const sortedPOIs = [...pointsOfInterest].sort((a, b) => a.startTime - b.startTime);
+        const sortedPOIs = [...pointsOfInterest].sort((a, b) => a.startFrameNo - b.startFrameNo);
 
         let currentScrollPosition = window.scrollY;
 
         sortedPOIs.forEach((poi, index) => {
             // Calculate scroll position for this POI
-            const poiProgress = ((poi.startTime + poi.endTime) / 2) / 100;
+            const poiProgress = ((poi.startFrameNo + poi.endFrameNo) / 2) / 100;
             const targetScroll = triggerTop + (triggerHeight * poiProgress) - viewportHeight / 2;
 
             // Normal speed segment (approach POI)

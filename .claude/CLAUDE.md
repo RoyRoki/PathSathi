@@ -1,5 +1,17 @@
 # PathSathi - Travel Journey Platform
 
+## ROCKET System (Root Agent)
+
+**Root:** `/Users/test/agent`
+**Skills:** `/Users/test/agent/.claude/skills/` (27 master skills)
+**Skill Catalog:** `/Users/test/agent/.claude/skills/INDEX.md`
+**Skill Router:** `/Users/test/agent/.claude/skills/SKILL_ROUTER.md`
+**Session State:** `/Users/test/agent/.claude/config/state/session-state.md`
+**Operating Mode:** `/Users/test/agent/.claude/core/governance/operating-mode.md`
+**Git Rules:** `/Users/test/agent/.claude/core/governance/git-governance.md`
+
+To load a skill, read: `/Users/test/agent/.claude/skills/<skill-name>/SKILL.md`
+
 ## Stack
 
 - **Framework:** Next.js 14 (App Router, static export)

@@ -1,0 +1,71 @@
+{
+    "totalFrames": 1829,
+    "pointsOfInterest": [
+        {
+            "startFrameNo": 0,
+            "endFrameNo": 110,
+            "header": "Rohini Toll Gate",
+            "shortDescription": "The climb begins. Watch the Duars plains fade as you enter the steep Himalayan foothills."
+        },
+        {
+            "startFrameNo": 130,
+            "endFrameNo": 260,
+            "header": "Rohini Tea Gardens",
+            "shortDescription": "Manicured tea slopes and the famous 'Rock Viewpoint' featuring massive roadside boulders."
+        },
+        {
+            "startFrameNo": 302,
+            "endFrameNo": 480,
+            "header": "Balason River & Dudhia",
+            "shortDescription": "Crossing the scenic Dudhia Bridge over the wide, rocky Balason riverbed."
+        },
+        {
+            "startFrameNo": 500,
+            "endFrameNo": 575,
+            "header": "Gidda Pahar Curves",
+            "shortDescription": "The famous 'Snake Road.' Look back to see the road looping like a ribbon below."
+        },
+        {
+            "startFrameNo": 590,
+            "endFrameNo": 770,
+            "header": "Eagle’s Crag",
+            "shortDescription": "Kurseong's highest point. 360° views stretching from Siliguri plains to the high peaks."
+        },
+        {
+            "startFrameNo": 804,
+            "endFrameNo": 927,
+            "header": "Teesta Valley View",
+            "shortDescription": "Overlooking the Teesta River from the quiet, emerald slopes of Munsong village."
+        },
+        {
+            "startFrameNo": 980,
+            "endFrameNo": 1160,
+            "header": "Sonada Monastery",
+            "shortDescription": "The vibrant Samdrup Darjay Choling Monastery, a colorful spiritual landmark."
+        },
+        {
+            "startFrameNo": 1190,
+            "endFrameNo": 1320,
+            "header": "The Fog Alley",
+            "shortDescription": "A misty tunnel of Himalayan Pine (Dhupi) trees where the sun rarely touches the road."
+        },
+        {
+            "startFrameNo": 1390,
+            "endFrameNo": 1480,
+            "header": "Senchal Sanctuary",
+            "shortDescription": "Deep, ancient forests home to the rare and prehistoric Himalayan Salamander."
+        },
+        {
+            "startFrameNo": 1515,
+            "endFrameNo": 1670,
+            "header": "Batasia Loop",
+            "shortDescription": "The iconic railway spiral, War Memorial, and the grand opening of the mountain vista."
+        },
+        {
+            "startFrameNo": 1710,
+            "endFrameNo": 1773,
+            "header": "Kanchenjunga Range",
+            "shortDescription": "The finale: The world’s third-highest peak towering over Darjeeling."
+        }
+    ]
+}

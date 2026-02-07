@@ -16,12 +16,13 @@ export const routes: RouteInfo[] = [
       {
         id: "ag-101",
         name: "Himalaya Trails",
-        phone: "+91 98765 43210",
+        contactNo: "+91 98765 43210",
         email: "hello@himalayatrails.in",
         website: "https://himalayatrails.in",
         address: "Tenzing Norgay Road, Darjeeling",
         whatsapp: "+91 98765 43210",
-        isVerified: true
+        isVerified: true,
+        status: "active"
       }
     ]
   },

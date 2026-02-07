@@ -7,11 +7,10 @@ import {
     getDocs,
     query,
     where,
-    orderBy,
-    Timestamp
 } from "firebase/firestore";
 import { getFirestoreDb } from "@/lib/firebase";
-import type { Route, Agency } from "@/lib/types";
+import type { Route, Agency } from "@/lib/types/domain";
+import { firestoreToRoute, firestoreToAgency } from "@/lib/types/converters";
 
 /**
  * Fetch all active routes from Firestore with live agency counts
@@ -35,36 +34,22 @@ export async function getActiveRoutes(): Promise<Route[]> {
         // Build routes with live sponsor counts
         const routesWithCounts = await Promise.all(
             snapshot.docs.map(async (docItem) => {
-                const data = docItem.data();
+                const route = firestoreToRoute(docItem.id, docItem.data());
 
                 // Get live agency count (includes trial expiry check)
                 const liveCount = await getRouteAgencyCount(docItem.id);
 
                 return {
-                    id: docItem.id,
-                    title: data.title || "",
-                    subtitle: data.subtitle || "",
-                    path_slug: data.path_slug || docItem.id,
-                    status: data.status || "active",
-                    sponsor_count: liveCount, // Use live count instead of stored value
-                    distance_km: data.distance_km,
-                    duration_hours: data.duration_hours,
-                    hero_image: data.hero_image,
-                    asset_folder: data.asset_folder,
-                    total_frames: data.total_frames,
-                    desktop_asset_folder: data.desktop_asset_folder,
-                    desktop_total_frames: data.desktop_total_frames,
-                    featured_agency_uid: data.featured_agency_uid,
-                    created_at: data.created_at?.toDate?.(),
-                    updated_at: data.updated_at?.toDate?.()
-                } as Route;
+                    ...route,
+                    sponsorCount: liveCount, // Use live count instead of stored value
+                };
             })
         );
 
         // Sort client-side by created_at (newest first)
         return routesWithCounts.sort((a, b) => {
-            const aTime = a.created_at?.getTime() || 0;
-            const bTime = b.created_at?.getTime() || 0;
+            const aTime = a.createdAt?.getTime() ?? 0;
+            const bTime = b.createdAt?.getTime() ?? 0;
             return bTime - aTime;
         });
     } catch (error) {
@@ -86,25 +71,7 @@ export async function getAllRoutes(): Promise<Route[]> {
         const snapshot = await getDocs(collection(firestore, "routes"));
 
         return snapshot.docs.map((docItem) => {
-            const data = docItem.data();
-            return {
-                id: docItem.id,
-                title: data.title || "",
-                subtitle: data.subtitle || "",
-                path_slug: data.path_slug || docItem.id,
-                status: data.status || "inactive",
-                sponsor_count: data.sponsor_count || 0,
-                distance_km: data.distance_km,
-                duration_hours: data.duration_hours,
-                hero_image: data.hero_image,
-                asset_folder: data.asset_folder,
-                total_frames: data.total_frames,
-                desktop_asset_folder: data.desktop_asset_folder,
-                desktop_total_frames: data.desktop_total_frames,
-                featured_agency_uid: data.featured_agency_uid,
-                created_at: data.created_at?.toDate?.(),
-                updated_at: data.updated_at?.toDate?.()
-            } as Route;
+            return firestoreToRoute(docItem.id, docItem.data());
         });
     } catch (error) {
         console.error("Error fetching all routes:", error);
@@ -129,25 +96,7 @@ export async function getRouteBySlug(slug: string): Promise<Route | null> {
             return null;
         }
 
-        const data = snapshot.data();
-        return {
-            id: snapshot.id,
-            title: data.title || "",
-            subtitle: data.subtitle || "",
-            path_slug: data.path_slug || snapshot.id,
-            status: data.status || "inactive",
-            sponsor_count: data.sponsor_count || 0,
-            distance_km: data.distance_km,
-            duration_hours: data.duration_hours,
-            hero_image: data.hero_image,
-            asset_folder: data.asset_folder,
-            total_frames: data.total_frames,
-            desktop_asset_folder: data.desktop_asset_folder,
-            desktop_total_frames: data.desktop_total_frames,
-            featured_agency_uid: data.featured_agency_uid,
-            created_at: data.created_at?.toDate?.(),
-            updated_at: data.updated_at?.toDate?.()
-        } as Route;
+        return firestoreToRoute(snapshot.id, snapshot.data());
     } catch (error) {
         console.error("Error fetching route by slug:", error);
         return null;
@@ -243,33 +192,19 @@ export async function getRouteAgencies(routeId: string): Promise<Agency[]> {
 
                 if (!agencySnapshot.exists()) return null;
 
-                const agencyData = agencySnapshot.data();
+                const agency = firestoreToAgency(agencyId, agencySnapshot.data());
 
                 // Only return verified agencies with valid trial
-                if (!agencyData.is_verified) return null;
+                if (!agency.isVerified) return null;
 
-                const trialExpiry = agencyData.trial_expiry?.toDate?.();
+                const trialExpiry = agency.trialExpiry;
                 if (trialExpiry && trialExpiry.getTime() < Date.now()) return null;
 
-                return {
-                    id: agencyId,
-                    name: agencyData.name,
-                    phone: agencyData.contact_no,
-                    contact_no: agencyData.contact_no,
-                    email: agencyData.email,
-                    website: agencyData.website,
-                    address: agencyData.address,
-                    isVerified: agencyData.is_verified,
-                    whatsapp: agencyData.whatsapp,
-                    logo_url: agencyData.logo_url,
-                    status: agencyData.status,
-                    trialStart: agencyData.trial_start?.toDate?.()?.toISOString(),
-                    trialExpiry: agencyData.trial_expiry?.toDate?.()?.toISOString()
-                } as Agency;
+                return agency;
             })
         );
 
-        return agencies.filter(Boolean) as Agency[];
+        return agencies.filter((agency): agency is Agency => agency !== null);
     } catch (error) {
         console.error("Error fetching route agencies:", error);
         return [];

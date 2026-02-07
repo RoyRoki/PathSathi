@@ -32,7 +32,6 @@ import {
   MapPin,
   CheckCircle2,
   AlertCircle,
-  ChevronRight,
   ExternalLink,
   Activity,
   Award
@@ -78,6 +77,13 @@ type PurchaseDoc = {
   status: string;
 };
 
+type OwnedRouteDoc = {
+  id: string;
+  route_id: string;
+  trial_start?: any;
+  trial_expiry?: any;
+};
+
 type Tab = "profile" | "my-routes" | "marketplace";
 
 export default function DashboardPage() {
@@ -87,6 +93,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState(emptyProfile);
   const [routes, setRoutes] = useState<RouteDoc[]>([]);
   const [purchases, setPurchases] = useState<PurchaseDoc[]>([]);
+  const [ownedRoutes, setOwnedRoutes] = useState<OwnedRouteDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -110,14 +117,25 @@ export default function DashboardPage() {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
+        setUserUid(null);
+        setEmail(null);
+        setAgency(null);
+        setRoutes([]);
+        setPurchases([]);
+        setOwnedRoutes([]);
         setLoading(false);
         return;
       }
       setUserUid(user.uid);
       setEmail(user.email);
-      await loadAgency(user.uid);
-      await loadRoutes();
-      await loadPurchases(user.uid);
+      try {
+        await loadAgency(user.uid);
+        await loadRoutes();
+        await loadPurchases(user.uid);
+        await loadOwnedRoutes(user.uid);
+      } catch (error) {
+        console.error("Dashboard loading error:", error);
+      }
       setLoading(false);
     });
 
@@ -127,19 +145,26 @@ export default function DashboardPage() {
   const loadAgency = async (uid: string) => {
     const firestore = getFirestoreDb();
     if (!firestore) return;
-    const ref = doc(firestore, "agencies", uid);
-    const snapshot = await getDoc(ref);
-    if (snapshot.exists()) {
-      const data = snapshot.data() as AgencyDoc;
-      setAgency(data);
-      setProfile({
-        name: data.name || "",
-        contact_no: data.contact_no || "",
-        whatsapp: data.whatsapp || "",
-        address: data.address || "",
-        website: data.website || "",
-        logo_url: data.logo_url || ""
-      });
+    try {
+      const ref = doc(firestore, "agencies", uid);
+      const snapshot = await getDoc(ref);
+      if (snapshot.exists()) {
+        const data = snapshot.data() as AgencyDoc;
+        setAgency(data);
+        setProfile({
+          name: data.name || "",
+          contact_no: data.contact_no || "",
+          whatsapp: data.whatsapp || "",
+          address: data.address || "",
+          website: data.website || "",
+          logo_url: data.logo_url || ""
+        });
+      }
+    } catch (error: any) {
+      console.error("Error loading agency data:", error);
+      if (error.code === 'permission-denied') {
+        showMessage("Access denied. Please ensure you are logged in correctly.", "error");
+      }
     }
   };
 
@@ -165,14 +190,39 @@ export default function DashboardPage() {
   const loadPurchases = async (uid: string) => {
     const firestore = getFirestoreDb();
     if (!firestore) return;
-    const snapshot = await getDocs(
-      query(collection(firestore, "routePurchases"), where("agency_uid", "==", uid))
-    );
-    const docs = snapshot.docs.map((docItem) => {
-      const data = docItem.data() as Omit<PurchaseDoc, "id">;
-      return { id: docItem.id, ...data };
-    });
-    setPurchases(docs);
+    try {
+      const snapshot = await getDocs(
+        query(collection(firestore, "routePurchases"), where("agency_uid", "==", uid))
+      );
+      const docs = snapshot.docs.map((docItem) => {
+        const data = docItem.data() as Omit<PurchaseDoc, "id">;
+        return { id: docItem.id, ...data };
+      });
+      setPurchases(docs);
+    } catch (error) {
+      console.error("Error loading purchases:", error);
+    }
+  };
+
+  const loadOwnedRoutes = async (uid: string) => {
+    const firestore = getFirestoreDb();
+    if (!firestore) return;
+
+    try {
+      // Agency document ID is the user's UID, so we can access it directly
+      // This avoids querying the agencies collection which requires different permissions
+      const routesSnapshot = await getDocs(
+        collection(firestore, "agencies", uid, "routes")
+      );
+
+      const docs = routesSnapshot.docs.map((docItem) => {
+        const data = docItem.data() as Omit<OwnedRouteDoc, "id">;
+        return { id: docItem.id, ...data };
+      });
+      setOwnedRoutes(docs);
+    } catch (error) {
+      console.error("Error loading owned routes:", error);
+    }
   };
 
   const showMessage = (msg: string, type: "success" | "error" | "info" = "info") => {
@@ -359,9 +409,17 @@ export default function DashboardPage() {
                 variant="ghost"
                 size="icon"
                 className="rounded-xl w-11 h-11 hover:bg-destructive/10 hover:text-destructive"
-                onClick={() => {
-                  const auth = getFirebaseAuth();
-                  if (auth) signOut(auth);
+                onClick={async () => {
+                  try {
+                    const auth = getFirebaseAuth();
+                    if (auth) {
+                      await signOut(auth);
+                      // State update will trigger re-render
+                      setUserUid(null);
+                    }
+                  } catch (error) {
+                    console.error("Logout failed", error);
+                  }
                 }}
               >
                 <LogOut className="w-5 h-5" />
@@ -376,7 +434,7 @@ export default function DashboardPage() {
         {/* Verification Alert */}
         {!agency?.is_verified && (
           <div className="mb-10 p-6 rounded-[2rem] bg-amber-500/10 border border-amber-500/20 backdrop-blur-xl animate-fade-in-up-premium">
-            <div className="flex items-start gap-4">
+            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
                 <Clock className="w-6 h-6" />
               </div>
@@ -639,7 +697,7 @@ export default function DashboardPage() {
 
                     <div className="grid md:grid-cols-2 gap-8">
                       {routes.map((route) => {
-                        const isOwned = purchases.some(p => p.route_id === route.id);
+                        const isOwned = ownedRoutes.some(r => r.route_id === route.id);
                         return (
                           <Card key={route.id} className="relative overflow-hidden rounded-[2rem] border-none bg-background/50 group hover:shadow-3xl transition-all duration-500">
                             <div className="relative h-48 w-full overflow-hidden">
@@ -651,7 +709,10 @@ export default function DashboardPage() {
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                               <div className="absolute bottom-4 left-6">
-                                <Badge className="bg-white/20 backdrop-blur-md border border-white/30 text-white mb-2">Signature Route</Badge>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  <Badge className="bg-white/20 backdrop-blur-md border border-white/30 text-white">Signature Route</Badge>
+                                  <Badge className="bg-amber-500/80 backdrop-blur-md border border-amber-500/30 text-white">7 Days Access</Badge>
+                                </div>
                                 <h3 className="font-bold text-2xl text-white tracking-tight">{route.title}</h3>
                               </div>
                             </div>

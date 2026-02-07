@@ -5,8 +5,8 @@ import Image from "next/image";
 import { getAssetPath } from "@/lib/utils";
 
 type POI = {
-  startTime: number;
-  endTime: number;
+  startFrameNo: number;
+  endFrameNo: number;
   header: string;
   shortDescription: string;
 };
@@ -16,6 +16,8 @@ type JourneyPlayerProps = {
   mobileFrames: number;
   desktopFrames: number;
   pointsOfInterest?: POI[];
+  isMobile: boolean;
+  children?: React.ReactNode;
 };
 
 export function JourneyPlayer({
@@ -23,27 +25,18 @@ export function JourneyPlayer({
   mobileFrames,
   desktopFrames,
   pointsOfInterest = [],
+  isMobile,
+  children
 }: JourneyPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentFrame, setCurrentFrame] = useState(1);
   const [activePOI, setActivePOI] = useState<POI | null>(null);
   const [activePOIIndex, setActivePOIIndex] = useState<number>(-1);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Get route slug
   const routeSlug = assetFolder?.split("/")[0] || "siliguri-Kurseong-darjeeling";
 
   // Device-specific frame counts from route data
   const totalFrames = isMobile ? mobileFrames : desktopFrames;
   const devicePath = isMobile ? "mobile" : "desktop";
-
-  useEffect(() => {
-    // Detect device
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,17 +46,19 @@ export function JourneyPlayer({
       const rect = container.getBoundingClientRect();
       const scrollProgress = Math.max(0, Math.min(1, -rect.top / (rect.height - window.innerHeight)));
 
-      // Calculate frame (1-based index)
-      const frame = Math.max(1, Math.min(totalFrames, Math.floor(scrollProgress * totalFrames) + 1));
+      // Calculate frame (0-based index to match config and file naming)
+      const frame = Math.max(0, Math.min(totalFrames - 1, Math.floor(scrollProgress * totalFrames)));
       setCurrentFrame(frame);
 
-      // Check for active POI
-      const progress = scrollProgress * 100;
+      // Check for active POI - compare actual frame numbers
       const poiIndex = pointsOfInterest.findIndex(
-        (p) => progress >= p.startTime && progress <= p.endTime
+        (p) => frame >= p.startFrameNo && frame <= p.endFrameNo
       );
       if (poiIndex !== -1) {
-        setActivePOI(pointsOfInterest[poiIndex]);
+        const poi = pointsOfInterest[poiIndex];
+        if (poi) {
+          setActivePOI(poi);
+        }
         setActivePOIIndex(poiIndex);
       } else {
         setActivePOI(null);
@@ -126,6 +121,17 @@ export function JourneyPlayer({
           </div>
         )}
 
+        {/* End of Journey Content (Agency Info) */}
+        <div
+          className="absolute inset-0 z-20 flex items-center justify-center transition-opacity duration-700 ease-in-out pointer-events-none"
+          style={{
+            opacity: scrollProgress > 0.98 ? 1 : 0,
+            pointerEvents: scrollProgress > 0.98 ? 'auto' : 'none',
+            backdropFilter: scrollProgress > 0.98 ? 'blur(10px) brightness(0.5)' : 'none'
+          }}
+        >
+          {children}
+        </div>
 
       </div>
     </div>

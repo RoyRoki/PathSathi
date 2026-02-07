@@ -1,39 +1,36 @@
-export interface Agency {
-    id: string;
-    name: string;
-    address?: string;
-    email?: string;
-    website?: string;
-    phone?: string;
-    contact_no?: string;
-    whatsapp?: string;
-    isVerified?: boolean;
-    logo_url?: string;
-    status?: string;
-    trialStart?: string;
-    trialExpiry?: string;
-}
+/**
+ * Legacy type definitions - Re-exported from new type system
+ * 
+ * This file maintains backward compatibility while the codebase
+ * is being migrated to use the new domain types.
+ * 
+ * @deprecated Import from @/lib/types/domain instead
+ */
 
-export interface Route {
-    id: string;
-    title: string;
-    subtitle: string;
-    path_slug: string;
-    status: 'active' | 'inactive';
-    sponsor_count: number;
-    distance_km?: number;
-    duration_hours?: number;
-    hero_image?: string;
-    asset_folder?: string;
-    total_frames?: number;
-    desktop_asset_folder?: string;
-    desktop_total_frames?: number;
-    featured_agency_uid?: string;
-    created_at?: Date;
-    updated_at?: Date;
-}
+import type { Agency } from "./types/domain";
+export type {
+    Agency,
+    Route,
+    RoutePurchaseRequest,
+    RouteFormData,
+    PurchasePayload
+} from "./types/domain";
 
-// Legacy interface for backward compatibility with existing components
+export type {
+    FirestoreAgency,
+    FirestoreRoute,
+    FirestoreRoutePurchase
+} from "./types/firestore";
+
+export type {
+    firestoreToAgency,
+    firestoreToRoute,
+    firestoreToRoutePurchase,
+    timestampToDate
+} from "./types/converters";
+
+// Legacy interface for backward compatibility
+// TODO: Remove this once all components are updated
 export interface RouteInfo {
     id: string;
     title: string;

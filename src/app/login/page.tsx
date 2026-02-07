@@ -102,7 +102,7 @@ export default function LoginPage() {
 
           <div className="bg-white/50 dark:bg-black/20 backdrop-blur-3xl p-8 rounded-[2rem] border border-border/50 shadow-2xl relative">
             <div className="absolute -top-4 -right-4 w-20 h-20 bg-primary/5 rounded-full blur-2xl" />
-            <AgencyAuth mode="login" />
+            <AgencyAuth />
           </div>
 
           <div className="mt-16 flex items-center justify-center gap-3 text-xs text-muted-foreground font-semibold uppercase tracking-[0.2em]">

@@ -5,8 +5,8 @@ import { MapPin, X } from "lucide-react";
 import { gsap } from "@/lib/gsap";
 
 export interface POI {
-    startTime: number;
-    endTime: number;
+    startFrameNo: number;
+    endFrameNo: number;
     header: string;
     shortDescription: string;
 }
@@ -25,7 +25,7 @@ export function POIMarker({ poi, index, isActive, progress }: POIMarkerProps) {
 
     // Calculate if this POI should be visible based on progress
     const totalDuration = 100; // Assuming normalized to 100
-    const poiProgress = (poi.startTime + poi.endTime) / 2 / totalDuration;
+    const poiProgress = (poi.startFrameNo + poi.endFrameNo) / 2 / totalDuration;
     const shouldShow = Math.abs(progress - poiProgress) < 0.15; // Show when within 15% range
 
     const handleMouseEnter = () => {
@@ -183,7 +183,7 @@ export function POIMarker({ poi, index, isActive, progress }: POIMarkerProps) {
                                 <div className="flex items-center gap-2 text-xs text-white/60 font-mono uppercase tracking-wide">
                                     <div className="flex items-center gap-1">
                                         <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-                                        <span>Journey Time: {poi.startTime}s - {poi.endTime}s</span>
+                                        <span>Frame Range: {poi.startFrameNo} - {poi.endFrameNo}</span>
                                     </div>
                                 </div>
                             </div>

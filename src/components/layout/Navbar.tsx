@@ -16,7 +16,8 @@ export function Navbar() {
     const isRoutePage = pathname?.startsWith("/routes/");
     // Check for exact match or trailing slash
     const isAuthPage = pathname === "/login" || pathname === "/login/" || pathname === "/signup" || pathname === "/signup/";
-    const shouldHideNavbar = isRoutePage || isAuthPage;
+    const isDashboard = pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin");
+    const shouldHideNavbar = isRoutePage || isAuthPage || isDashboard;
 
     useEffect(() => {
         const handleScroll = () => setIsScrolled(window.scrollY > 50);

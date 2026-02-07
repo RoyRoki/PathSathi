@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 
 export interface ModalProps extends HTMLMotionProps<"div"> {
     isOpen: boolean;

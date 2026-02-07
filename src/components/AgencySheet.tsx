@@ -66,10 +66,10 @@ export function AgencySheet({ agency, hasAgencies, className }: AgencySheetProps
           {/* Logo and Info Section */}
           <div className="flex items-start gap-4">
             {/* Agency Logo */}
-            {agency.logo_url ? (
+            {agency.logoUrl ? (
               <div className="w-16 h-16 rounded-2xl border border-border/50 overflow-hidden bg-background/20 flex-shrink-0">
                 <img
-                  src={agency.logo_url}
+                  src={agency.logoUrl}
                   alt={`${agency.name} logo`}
                   className="w-full h-full object-contain"
                   onError={(e) => {
@@ -107,7 +107,7 @@ export function AgencySheet({ agency, hasAgencies, className }: AgencySheetProps
               <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
                 <Phone className="w-4 h-4 text-primary" />
               </div>
-              {agency.phone}
+              {agency.contactNo}
             </div>
             <div className="flex items-center gap-3 text-sm text-foreground/80 font-medium whitespace-nowrap">
               <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center">
@@ -119,12 +119,12 @@ export function AgencySheet({ agency, hasAgencies, className }: AgencySheetProps
         </div>
 
         <div className="mt-8 pt-8 border-t border-border/50 flex flex-wrap gap-4">
-          <a href={`tel:${agency.phone}`} className="flex-1 min-w-[140px]">
+          <a href={`tel:${agency.contactNo}`} className="flex-1 min-w-[140px]">
             <Button variant="outline" className="w-full rounded-2xl h-14 font-semibold border-primary/20 hover:bg-primary/5">
               Call Direct
             </Button>
           </a>
-          <a href={formatWhatsApp(agency.whatsapp ?? agency.phone)} className="flex-1 min-w-[140px]">
+          <a href={formatWhatsApp(agency.whatsapp ?? agency.contactNo)} className="flex-1 min-w-[140px]">
             <Button className="w-full rounded-2xl h-14 font-semibold bg-[#25D366] hover:bg-[#20bd5a] text-white border-none shadow-lg">
               <MessageCircle className="w-5 h-5 mr-2" />
               WhatsApp

@@ -1,68 +1,70 @@
 {
+    "totalFrames": 1829,
+    "desktopTotalFrames": 1921,
     "pointsOfInterest": [
         {
-            "startTime": 0,
-            "endTime": 3,
+            "startFrameNo": 0,
+            "endFrameNo": 3,
             "header": "Rohini Toll Plaza View (Left)",
             "shortDescription": "Immediately after the toll, the road switches from flat to steep. Looking left, you see the last of the 'Duars' plains before the hills swallow the horizon."
         },
         {
-            "startTime": 7,
-            "endTime": 10,
+            "startFrameNo": 7,
+            "endFrameNo": 10,
             "header": "Lower Rohini Tea Garden (Both Sides)",
             "shortDescription": "The road carves through manicured tea bushes. On the Right, look for the 'Rohini Rock Viewpoint,' a popular spot where massive boulders sit amidst the tea."
         },
         {
-            "startTime": 12,
-            "endTime": 19,
+            "startFrameNo": 12,
+            "endFrameNo": 19,
             "header": "Balason River",
             "shortDescription": "Dudhia | Balason River with Dudhia Bridge"
         },
         {
-            "startTime": 20,
-            "endTime": 23,
+            "startFrameNo": 20,
+            "endFrameNo": 23,
             "header": "Gidda Pahar (Right/Front)",
             "shortDescription": "As you approach Kurseong via the 'Snake Road,' the Giddapahar Viewpoint appears. This is a famous photographer's spot. You can see the road you just climbed looping below you like a ribbon."
         },
         {
-            "startTime": 24,
-            "endTime": 31,
+            "startFrameNo": 24,
+            "endFrameNo": 31,
             "header": "Eagle’s Crag (Left/Full Panorama)",
             "shortDescription": "Located at the highest point of Kurseong. You get a 360-degree view. To the South, the plains of Siliguri; to the North, the first peek of the high Himalayas."
         },
         {
-            "startTime": 33,
-            "endTime": 37,
+            "startFrameNo": 33,
+            "endFrameNo": 37,
             "header": "Teesta River Valley",
             "shortDescription": "View from the scenic village of Munsong (or Mansong/Mungsong) in the Kalimpong district of West Bengal."
         },
         {
-            "startTime": 41,
-            "endTime": 48,
+            "startFrameNo": 41,
+            "endFrameNo": 48,
             "header": "Sonada Monastery (Right)",
             "shortDescription": "The Samdrup Darjay Choling Monastery appears with its bright colors."
         },
         {
-            "startTime": 49,
-            "endTime": 54,
+            "startFrameNo": 49,
+            "endFrameNo": 54,
             "header": "The 'Fog Alley' (Both Sides)",
             "shortDescription": "The stretch between Sonada and Ghoom is lined with Dhupi (Himalayan Pine) trees. The sun rarely hits the road here; it’s a tunnel of green and grey mist."
         },
         {
-            "startTime": 56,
-            "endTime": 61,
+            "startFrameNo": 56,
+            "endFrameNo": 61,
             "header": "Senchal Wildlife Sanctuary (Right)",
             "shortDescription": "Look for the dense, dark forests on your right. This is where the rare Himalayan Salamander lives in small, hidden lakes."
         },
         {
-            "startTime": 63,
-            "endTime": 68,
+            "startFrameNo": 63,
+            "endFrameNo": 68,
             "header": "Batasia Loop (Left)",
             "shortDescription": "The final 'reveal.' The mountain opens up. You see the War Memorial, the spiral tracks, and—if luck is on your side—the entire panorama."
         },
         {
-            "startTime": 72,
-            "endTime": 76,
+            "startFrameNo": 72,
+            "endFrameNo": 76,
             "header": "Kanchenjunga Range",
             "shortDescription": "Standing tall behind Darjeeling town."
         }

@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { motion, AnimatePresence, HTMLMotionProps } from "framer-motion";
+import { motion, HTMLMotionProps } from "framer-motion";
 
 export interface AlertProps extends HTMLMotionProps<"div"> {
     variant?: "success" | "warning" | "error" | "info";

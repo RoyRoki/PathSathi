@@ -6,9 +6,9 @@ import Image from 'next/image'
 import { ArrowRight, MapPin, Clock, Users } from 'lucide-react'
 import { Container } from '@/components/ui/Container'
 import { getActiveRoutes } from '@/lib/services/routes'
-import type { Route } from '@/lib/types'
+import type { Route } from '@/lib/types/domain'
 import { ScrollingGallery } from '@/components/ui/ScrollingGallery'
-import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
+import { gsap, useGSAP } from '@/lib/gsap'
 import { getAssetPath } from '@/lib/utils'
 import SplitType from 'split-type'
 
@@ -31,7 +31,7 @@ export default function Home() {
         const activeRoutes = await getActiveRoutes()
         // Filter to only routes that have assets
         const validRoutes = activeRoutes.filter(
-          route => VALID_ROUTE_SLUGS.includes(route.path_slug)
+          route => VALID_ROUTE_SLUGS.includes(route.pathSlug)
         )
         setRoutes(validRoutes)
       } catch (error) {
@@ -318,13 +318,13 @@ export default function Home() {
                 return (
                   <Link
                     key={route.id}
-                    href={`/routes/${route.path_slug}`}
+                    href={`/routes/${route.pathSlug}`}
                     className={`route-card group block ${isLarge ? 'md:col-span-2' : ''}`}
                   >
                     <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[500px]' : 'h-[400px]'}`}>
                       {/* Image */}
                       <Image
-                        src={getAssetPath(route.hero_image || "/images/mountain_road_journey_1770289426463.png")}
+                        src={getAssetPath(route.heroImage || "/images/mountain_road_journey_1770289426463.png")}
                         alt={route.title}
                         fill
                         className="route-image object-cover transition-transform duration-700"
@@ -343,22 +343,22 @@ export default function Home() {
                         <div className="flex flex-col gap-4">
                           {/* Stats Row */}
                           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/60 font-medium">
-                            {route.distance_km && (
+                            {route.distanceKm && (
                               <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
                                 <MapPin className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.distance_km} km</span>
+                                <span>{route.distanceKm} km</span>
                               </div>
                             )}
-                            {route.duration_hours && (
+                            {route.durationHours && (
                               <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
                                 <Clock className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.duration_hours} hrs</span>
+                                <span>{route.durationHours} hrs</span>
                               </div>
                             )}
-                            {(route.sponsor_count ?? 0) > 0 && (
+                            {(route.sponsorCount ?? 0) > 0 && (
                               <div className="flex items-center gap-1.5 tracking-[0.1em] uppercase">
                                 <Users className="w-3.5 h-3.5 text-white/40" />
-                                <span>{route.sponsor_count} {route.sponsor_count === 1 ? 'partner' : 'partners'}</span>
+                                <span>{route.sponsorCount} {route.sponsorCount === 1 ? 'partner' : 'partners'}</span>
                               </div>
                             )}
                           </div>

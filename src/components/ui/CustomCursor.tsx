@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { gsap } from "@/lib/gsap";
 
 export function CustomCursor() {
     const cursorRef = useRef<HTMLDivElement>(null);
     const followerRef = useRef<HTMLDivElement>(null);
-    const [isPointer, setIsPointer] = useState(false);
 
     useEffect(() => {
         const cursor = cursorRef.current;
@@ -46,7 +45,6 @@ export function CustomCursor() {
                 target.closest("button") ||
                 target.classList.contains("cursor-pointer")
             ) {
-                setIsPointer(true);
                 gsap.to(follower, {
                     scale: 2,
                     backgroundColor: "rgba(var(--primary), 0.1)",
@@ -54,7 +52,6 @@ export function CustomCursor() {
                     duration: 0.3,
                 });
             } else {
-                setIsPointer(false);
                 gsap.to(follower, {
                     scale: 1,
                     backgroundColor: "transparent",

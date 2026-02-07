@@ -1,0 +1,71 @@
+{
+    "totalFrames": 1921,
+    "pointsOfInterest": [
+        {
+            "startFrameNo": 0,
+            "endFrameNo": 74,
+            "header": "The Gateway: Rohini Toll Plaza",
+            "shortDescription": "The transition point where the plains of the 'Duars' meet the rising Himalayas. As you pass the toll, the horizon shifts dramatically from flat landscapes to the steep, emerald embrace of the foothills."
+        },
+        {
+            "startFrameNo": 88,
+            "endFrameNo": 219,
+            "header": "Rohini Tea Estates & Rock Viewpoint",
+            "shortDescription": "Wind through carpets of manicured tea bushes that line the hillside. On the right, keep an eye out for the massive, ancient boulders of the Rohini Rock Viewpoint nestled within the tea gardens."
+        },
+        {
+            "startFrameNo": 305,
+            "endFrameNo": 450,
+            "header": "Dudhia & The Balason River",
+            "shortDescription": "Cross the iconic Dudhia Bridge over the Balason River. This rocky riverbed is a popular riverside retreat, offering a refreshing break with cool mountain waters flowing toward the plains."
+        },
+        {
+            "startFrameNo": 470,
+            "endFrameNo": 640,
+            "header": "Giddapahar: The Snake Road Ascent",
+            "shortDescription": "Negotiate the famous 'Snake Road' curves. From the Giddapahar Viewpoint, the road you just conquered unfolds below you like a silver ribbon draped across the mountainside."
+        },
+        {
+            "startFrameNo": 670,
+            "endFrameNo": 839,
+            "header": "Eagle's Crag: The Kurseong Summit",
+            "shortDescription": "Perched at Kurseong's highest peak, this spot offers a breathtaking 360-degree panorama. Look south to see the distant city lights of Siliguri and north for your first glimpse of the high Himalayan peaks."
+        },
+        {
+            "startFrameNo": 860,
+            "endFrameNo": 1014,
+            "header": "Munsong & The Teesta Valley",
+            "shortDescription": "A serene detour offering sweeping views of the mighty Teesta River as it carves through the Kalimpong valley, framed by the lush, rolling hills of North Bengal."
+        },
+        {
+            "startFrameNo": 1047,
+            "endFrameNo": 1194,
+            "header": "Samdrup Darjay Choling Monastery",
+            "shortDescription": "Pass the vibrant Sonada Monastery on your right. Its brilliant colors and traditional Tibetan architecture provide a spiritual landmark on the road to Darjeeling."
+        },
+        {
+            "startFrameNo": 1238,
+            "endFrameNo": 1370,
+            "header": "The Enchanted Fog Alley",
+            "shortDescription": "Enter a mystical tunnel of Himalayan Pine (Dhupi) trees between Sonada and Ghoom. This stretch is famously cloaked in a permanent, ethereal grey mist where sunlight rarely touches the asphalt."
+        },
+        {
+            "startFrameNo": 1442,
+            "endFrameNo": 1600,
+            "header": "Senchal's Ancient Wilderness",
+            "shortDescription": "The road skirts the edge of the Senchal Wildlife Sanctuary. These dense, dark forests are a sanctuary for biodiversity and the rare, prehistoric Himalayan Salamander."
+        },
+        {
+            "startFrameNo": 1657,
+            "endFrameNo": 1800,
+            "header": "Batasia Loop & The Toy Train Tracks",
+            "shortDescription": "The grand reveal of the journey. Witness the engineering marvel of the Toy Train's spiral tracks and the War Memorial, set against a backdrop of open mountain vistas."
+        },
+        {
+            "startFrameNo": 1847,
+            "endFrameNo": 1920,
+            "header": "The Majestic Kanchenjunga Range",
+            "shortDescription": "The ultimate reward. The world's third-highest peak stands in snow-capped glory, towering over the colorful rooftops of Darjeeling town."
+        }
+    ]
+}

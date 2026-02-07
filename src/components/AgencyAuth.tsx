@@ -7,7 +7,7 @@ import { getFirebaseAuth } from "@/lib/firebase";
 import { Button } from "@/components/ui/Button";
 import { Mail, ShieldCheck, Sparkles, Loader2 } from "lucide-react";
 
-export function AgencyAuth({ mode }: { mode: "login" | "signup" }) {
+export function AgencyAuth() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");

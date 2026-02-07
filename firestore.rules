@@ -22,10 +22,16 @@ service cloud.firestore {
         request.resource.data.status == resource.data.status
       );
       allow delete: if isAdmin();
+      
+      match /routes/{routeId} {
+        allow read: if isAdmin() || request.auth.uid == agencyId;
+        allow write: if isAdmin();
+      }
     }
 
     match /routePurchases/{purchaseId} {
-      allow read: if isAdmin() || request.auth.uid == resource.data.agency_uid;
+      allow read: if (resource.data.status == 'approved') || isAdmin() || request.auth.uid == resource.data.agency_uid;
+      allow list: if true; // Allow querying for approved purchases
       allow create: if request.auth.uid == request.resource.data.agency_uid
         && get(/databases/$(database)/documents/agencies/$(request.auth.uid)).data.is_verified == true;
       allow update, delete: if isAdmin();
