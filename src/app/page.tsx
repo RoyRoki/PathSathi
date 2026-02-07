@@ -18,7 +18,7 @@ export default function Home() {
   const featuresRef = useRef<HTMLDivElement>(null)
   const routesRef = useRef<HTMLElement>(null)
   const [routes, setRoutes] = useState<Route[]>([])
-  const [routeAgencies, setRouteAgencies] = useState<Record<string, Agency[]>>({})
+  const [_routeAgencies, setRouteAgencies] = useState<Record<string, Agency[]>>({})
   const [isLoading, setIsLoading] = useState(true)
 
   // Only show routes that have asset folders in public/routes/
