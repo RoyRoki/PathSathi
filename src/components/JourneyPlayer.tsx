@@ -61,7 +61,7 @@ export function JourneyPlayer({
   return (
     <div ref={containerRef} className="relative w-full h-screen bg-black overflow-hidden">
       {/* Progress Bar */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
+      <div className="absolute top-0 left-0 w-full h-1 bg-black/20 z-50 pointer-events-none">
         <div
           className="h-full bg-[hsl(var(--accent))] shadow-[0_0_8px_hsl(var(--accent)/0.8)] transition-all duration-75 ease-out"
           style={{ width: `${progress * 100}%` }}
@@ -71,17 +71,17 @@ export function JourneyPlayer({
       {/* Canvas Layer */}
       <canvas
         ref={canvasRef}
-        className="fixed inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-cover z-10"
       />
 
       {/* Vignette overlay */}
-      <div className="fixed inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-10" />
+      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.6)] z-20" />
 
       {/* POI Overlay - Alternating Positions */}
       {activePOI && (
         <div
           key={activePOI.header} // Force re-animation on change
-          className={`fixed md:top-1/2 md:-translate-y-1/2 bottom-32 md:bottom-auto z-40 animate-in fade-in slide-in-from-bottom-8 duration-700 ${activePOIIndex % 2 === 0 ? 'left-6 md:left-12' : 'right-6 md:right-12'
+          className={`absolute md:top-1/2 md:-translate-y-1/2 bottom-32 md:bottom-auto z-40 animate-in fade-in slide-in-from-bottom-8 duration-700 ${activePOIIndex % 2 === 0 ? 'left-6 md:left-12' : 'right-6 md:right-12'
             }`}
         >
           <div className="w-80 md:w-96 bg-black/30 backdrop-blur-2xl rounded-3xl p-6 border border-white/10 shadow-2xl overflow-hidden group hover:bg-black/40 transition-colors">
@@ -100,7 +100,7 @@ export function JourneyPlayer({
 
       {/* End of Journey Content (Agency Info) */}
       <div
-        className="fixed inset-0 z-30 flex items-center justify-center transition-all duration-1000 ease-in-out pointer-events-none"
+        className="absolute inset-0 z-30 flex items-center justify-center transition-all duration-1000 ease-in-out pointer-events-none"
         style={{
           opacity: progress > 0.96 ? 1 : 0,
           pointerEvents: progress > 0.96 ? 'auto' : 'none',
