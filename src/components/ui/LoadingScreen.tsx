@@ -16,7 +16,7 @@ interface LoadingScreenProps {
 
 export function LoadingScreen({ progress, backgroundImage }: LoadingScreenProps) {
     return (
-        <div className="fixed inset-0 z-[100] flex h-screen w-full items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex h-screen w-full items-center justify-center bg-background/80 backdrop-blur-sm overflow-hidden touch-none overscroll-none">
             {/* Background Image if available */}
             {backgroundImage && (
                 <>

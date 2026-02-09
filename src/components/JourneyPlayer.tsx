@@ -56,7 +56,8 @@ export function JourneyPlayer({
     triggerRef: containerRef,
     // Increase scroll distance to slow down the animation relative to scroll speed
     // This makes it harder to "skip" frames by scrolling too fast
-    end: `+=${totalFrames * 5}`,
+    // Desktop needs more scroll distance (7x) vs Mobile (5x) for better feel
+    end: `+=${totalFrames * (isMobile ? 5 : 7)}`,
     scrub: 0.5,
     onLoadProgress,
     preloadAll: true

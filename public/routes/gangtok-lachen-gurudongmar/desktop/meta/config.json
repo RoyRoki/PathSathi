@@ -1,0 +1,77 @@
+{
+    "totalFrames": 2112,
+    "pointsOfInterest": [
+        {
+            "startFrameNo": 0,
+            "endFrameNo": 104,
+            "header": "Seven Sisters Waterfall",
+            "shortDescription": "Located on the Gangtok-Lachung Highway, seven different waterfalls harmonize and cascade down rugged cliffs. Features a footbridge and cafeteria. Best viewed during monsoon."
+        },
+        {
+            "startFrameNo": 135,
+            "endFrameNo": 280,
+            "header": "Mangan View Point",
+            "shortDescription": "Headquarters of North Sikkim offering an incredible vantage point for the Kanchenjunga range. Panoramic mountain views on clear days."
+        },
+        {
+            "startFrameNo": 305,
+            "endFrameNo": 413,
+            "header": "Lachung-Lachen Confluence",
+            "shortDescription": "The geographical heart of North Sikkim where Lachen and Lachung rivers meet to form the Teesta River. Located near Chungthang, surrounded by high mountain walls."
+        },
+        {
+            "startFrameNo": 457,
+            "endFrameNo": 630,
+            "header": "Bheem Nala Fall",
+            "shortDescription": "Also known as Amitabh Bachchan Falls due to its impressive height. One of the tallest and most powerful waterfalls in the region with a vertical drop."
+        },
+        {
+            "startFrameNo": 687,
+            "endFrameNo": 850,
+            "header": "Gurudongmar Lake",
+            "shortDescription": "One of the highest lakes in the world at 17,800 feet. Sacred to Buddhists, Sikhs, and Hindus. A portion remains unfrozen even in extreme winter—considered miraculous."
+        },
+        {
+            "startFrameNo": 876,
+            "endFrameNo": 1018,
+            "header": "Thangu Valley",
+            "shortDescription": "A quiet alpine valley for acclimatization before Gurudongmar. Known for wooden houses, nomadic lifestyle, and landscapes that shift from green to snow-covered."
+        },
+        {
+            "startFrameNo": 1089,
+            "endFrameNo": 1206,
+            "header": "Chopta Valley View Point",
+            "shortDescription": "Located above Thangu, famous for alpine meadows and proximity to the Tibetan border. Offers views of meandering rivers and snow-clad peaks."
+        },
+        {
+            "startFrameNo": 1266,
+            "endFrameNo": 1374,
+            "header": "Lachen Monastery",
+            "shortDescription": "A serene religious site built in 1858 with traditional Tibetan architecture and colorful murals. Offers a panoramic view of Lachen village."
+        },
+        {
+            "startFrameNo": 1440,
+            "endFrameNo": 1650,
+            "header": "Yumthang Valley",
+            "shortDescription": "The 'Valley of Flowers' — a sprawling meadow surrounded by Himalayas. Home to Shingba Rhododendron Sanctuary with 24+ rhododendron species and hot springs."
+        },
+        {
+            "startFrameNo": 1685,
+            "endFrameNo": 1785,
+            "header": "Zero Point (Yumesamdong)",
+            "shortDescription": "The last civilian outpost before the international border at 15,300 feet. Snow is almost always present, a favorite for winter experiences."
+        },
+        {
+            "startFrameNo": 1860,
+            "endFrameNo": 1988,
+            "header": "Katao - North Sikkim",
+            "shortDescription": "An off-beat destination near Lachung with spectacular snow-capped peak views. Popular for snow sports and frozen waterfalls. Requires army permits."
+        },
+        {
+            "startFrameNo": 2035,
+            "endFrameNo": 2107,
+            "header": "Lachung Monastery",
+            "shortDescription": "Perched on a slope across the river, one of the most culturally significant sites. Hosts famous Mask Dance during festivals, surrounded by apple orchards."
+        }
+    ]
+}

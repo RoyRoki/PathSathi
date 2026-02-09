@@ -67,6 +67,28 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
     window.scrollTo(0, 0);
   }, [slug]);
 
+  // Prevent scrolling during loading states
+  useEffect(() => {
+    // When initial load, config load, or asset preloading (< 98%) is happening
+    const isLoading = loading || configLoading || !journeyReady || journeyProgress < 98;
+
+    if (isLoading) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      // Optional: Prevent touch scroll on mobile more aggressively if needed
+      // document.body.style.position = 'fixed'; 
+      // document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
+  }, [loading, configLoading, journeyReady, journeyProgress]);
+
   // Read tid from URL client-side (for static export compatibility)
   useEffect(() => {
     if (typeof window !== 'undefined' && !initialTid) {
@@ -197,6 +219,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
       }, "-=0.6");
 
     // Enhanced parallax for hero background (desktop only)
+    // Disabled as per user request to stop bg scrolling
+    /*
     const shouldEnableParallax = window.matchMedia('(min-width: 1024px)').matches;
     if (shouldEnableParallax) {
       gsap.to(".journey-header-bg", {
@@ -210,6 +234,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
         }
       });
     }
+    */
   }, [route]);
 
   // Load agencies effect (existing logic)

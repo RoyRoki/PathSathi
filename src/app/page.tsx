@@ -361,9 +361,9 @@ export default function Home() {
             {isLoading ? (
               // Loading skeleton
               <>
-                <div className="md:col-span-2 h-[500px] rounded-2xl bg-card animate-pulse" />
-                <div className="h-[400px] rounded-2xl bg-card animate-pulse" />
-                <div className="h-[400px] rounded-2xl bg-card animate-pulse" />
+                <div className="min-w-[85vw] sm:min-w-[400px] md:min-w-0 md:col-span-2 h-[500px] rounded-2xl bg-card animate-pulse flex-shrink-0 snap-center border border-border/5" />
+                <div className="min-w-[85vw] sm:min-w-[400px] md:min-w-0 h-[500px] rounded-2xl bg-card animate-pulse flex-shrink-0 snap-center border border-border/5" />
+                <div className="min-w-[85vw] sm:min-w-[400px] md:min-w-0 h-[500px] rounded-2xl bg-card animate-pulse flex-shrink-0 snap-center border border-border/5" />
               </>
             ) : routes.length === 0 ? (
               <div className="md:col-span-2 text-center py-16 text-muted-foreground">
