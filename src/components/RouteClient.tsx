@@ -56,6 +56,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   const [activeAgencyId, setActiveAgencyId] = useState<string | undefined>(initialTid);
   const [loading, setLoading] = useState(true);
   const [routeConfig, setRouteConfig] = useState<RouteConfig | null>(null);
+  const [configLoading, setConfigLoading] = useState(true);
   const [journeyProgress, setJourneyProgress] = useState(0);
   const [journeyReady, setJourneyReady] = useState(false);
 
@@ -128,6 +129,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   // Load route configuration dynamically based on device
   useEffect(() => {
     const loadConfig = async () => {
+      setConfigLoading(true);
       const targetSource = isMobile ? "mobile" : "desktop";
       try {
         const response = await fetch(getAssetPath(`/routes/${slug.toLowerCase()}/${targetSource}/meta/config.json`));
@@ -148,6 +150,8 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
         }
       } catch (error) {
         console.warn("Could not load route config", error);
+      } finally {
+        setConfigLoading(false);
       }
     };
 
@@ -334,7 +338,7 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
   // - Route is still loading (loading = true)
 
 
-  if (loading) {
+  if (loading || configLoading) {
     return (
       <LoadingScreen />
     );
