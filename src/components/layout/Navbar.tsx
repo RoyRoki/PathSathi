@@ -85,7 +85,7 @@ export function Navbar() {
                     <div className="hidden md:block">
                         <Link
                             href="#routes"
-                            className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-[0.1em] uppercase transition-all duration-300 border ${isScrolled
+                            className={`inline-flex items-center justify-center px-5 py-2.5 rounded-full text-xs font-bold tracking-[0.1em] uppercase transition-all duration-300 border ${isScrolled
                                 ? "bg-primary text-white border-primary hover:bg-primary/90 hover:shadow-lg"
                                 : "bg-white/10 text-white border-white/30 hover:bg-white/20 backdrop-blur-md"
                                 }`}

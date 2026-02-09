@@ -9,7 +9,7 @@ import { getActiveRoutes, getRouteAgencies } from '@/lib/services/routes'
 import type { Route, Agency } from '@/lib/types/domain'
 import { ScrollingGallery } from '@/components/ui/ScrollingGallery'
 import { gsap, useGSAP } from '@/lib/gsap'
-import { getAssetPath } from '@/lib/utils'
+import { getAssetPath, cn } from '@/lib/utils'
 import SplitType from 'split-type'
 import { RequestSection } from '@/components/home/RequestSection'
 
@@ -25,7 +25,7 @@ export default function Home() {
 
   // Only show routes that have asset folders in public/routes/
   // Add new route slugs here when you add their assets
-  const VALID_ROUTE_SLUGS = ['siliguri-kurseong-darjeeling'];
+  const VALID_ROUTE_SLUGS = ['siliguri-kurseong-darjeeling', 'gangtok-lachen-gurudongmar'];
 
   // Fetch active routes from Firebase
   useEffect(() => {
@@ -33,9 +33,11 @@ export default function Home() {
       try {
         const activeRoutes = await getActiveRoutes()
         // Filter to only routes that have assets
-        const validRoutes = activeRoutes.filter(
-          route => VALID_ROUTE_SLUGS.includes(route.pathSlug)
-        )
+        const validRoutes = activeRoutes
+          .filter(route => VALID_ROUTE_SLUGS.includes(route.pathSlug))
+          .sort((a, b) => {
+            return VALID_ROUTE_SLUGS.indexOf(a.pathSlug) - VALID_ROUTE_SLUGS.indexOf(b.pathSlug);
+          })
         setRoutes(validRoutes)
 
         // Fetch agencies for each route
@@ -368,15 +370,18 @@ export default function Home() {
                 <p className="text-lg">No routes available yet. Check back soon!</p>
               </div>
             ) : (
-              routes.map((route, i) => {
-                const isLarge = i === 0
+              routes.map((route) => {
                 return (
                   <Link
                     key={route.id}
                     href={`/routes/${route.pathSlug}`}
-                    className={`route-card group block min-w-[85vw] sm:min-w-[400px] md:min-w-0 flex-shrink-0 snap-center ${isLarge ? 'md:col-span-2' : ''}`}
+                    className={cn(
+                      "route-card group block min-w-[85vw] sm:min-w-[400px] md:min-w-0 flex-shrink-0 snap-center",
+                      // Make Siliguri route span 2 columns on desktop
+                      route.pathSlug === 'siliguri-kurseong-darjeeling' ? 'md:col-span-2' : ''
+                    )}
                   >
-                    <div className={`relative overflow-hidden rounded-2xl bg-card ${isLarge ? 'h-[550px]' : 'h-[450px]'} shadow-lg hover:shadow-2xl transition-all duration-500`}>
+                    <div className="relative overflow-hidden rounded-2xl bg-card h-[500px] shadow-lg hover:shadow-2xl transition-all duration-500">
                       {/* Image */}
                       <Image
                         src={getAssetPath(route.heroImage || "/images/mountain_road_journey_1770289426463.png")}
@@ -438,6 +443,8 @@ export default function Home() {
                 )
               })
             )}
+
+
           </div>
         </Container>
       </section>

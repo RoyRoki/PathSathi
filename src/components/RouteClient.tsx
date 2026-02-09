@@ -61,6 +61,11 @@ export function RouteClient({ slug, tid: initialTid }: RouteClientProps) {
 
   const [isMobile, setIsMobile] = useState(false);
 
+  // Force scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
+
   // Read tid from URL client-side (for static export compatibility)
   useEffect(() => {
     if (typeof window !== 'undefined' && !initialTid) {

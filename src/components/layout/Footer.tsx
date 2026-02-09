@@ -18,6 +18,7 @@ export function Footer({ variant = "default" }: FooterProps) {
                 { label: "North Bengal", href: "/coming-soon" },
                 { label: "Sikkim", href: "/coming-soon" },
                 { label: "Darjeeling", href: "/routes/siliguri-kurseong-darjeeling" },
+                { label: "Gurudongmar", href: "/routes/gangtok-lachen-gurudongmar" },
                 { label: "Bhutan", href: "/coming-soon" },
                 { label: "Offbeat Stays", href: "/coming-soon" },
             ],

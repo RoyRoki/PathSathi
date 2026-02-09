@@ -13,6 +13,7 @@ export const dynamicParams = true;
 export async function generateStaticParams() {
   return [
     { slug: 'siliguri-kurseong-darjeeling' },
+    { slug: 'gangtok-lachen-gurudongmar' },
     // Add more routes here when they have assets:
     // { slug: 'siliguri-darjeeling' },
     // { slug: 'kolkata-sundarbans' },
